@@ -500,7 +500,7 @@ EOTEXT
           $title = $revision['fields']['title'];
           $prefix = "[".$this->ontoBranch."]";
           if (substr($title, 0, strlen($prefix)) !== $prefix) {
-            $revision['fields']['title'] = $prefix." ".preg_replace('/^\[vault-.*?\] /', '', $title);
+            $revision['fields']['title'] = $prefix." ".preg_replace('/^\[[a-z-]*?-[0-9.]*?(?:-[a-z0-9.]+?)?\] /', '', $title);
           }
           foreach ($xactions as $i => &$xact) {
             if ($xact['type'] == "title") {
