@@ -385,11 +385,9 @@ abstract class ArcanistLinter extends Phobject {
   }
 
   final protected function addLintMessage(ArcanistLintMessage $message) {
-    if (isset($path)) {
-      $root = $this->getProjectRoot();
-      $path = Filesystem::resolvePath($message->getPath(), $root);
-      $message->setPath(Filesystem::readablePath($path, $root));
-    }
+    $root = $this->getProjectRoot();
+    $path = Filesystem::resolvePath($message->getPath(), $root);
+    $message->setPath(Filesystem::readablePath($path, $root));
 
     $this->messages[] = $message;
     return $message;
