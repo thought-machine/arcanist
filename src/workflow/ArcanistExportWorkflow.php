@@ -185,6 +185,7 @@ EOTEXT
         $repository_api = $this->getRepositoryAPI();
         $parser = new ArcanistDiffParser();
         $parser->setRepositoryAPI($repository_api);
+        $onto = '';
 
         if ($repository_api instanceof ArcanistGitAPI) {
           $this->parseBaseCommitArgument($this->getArgument('paths'));
@@ -200,7 +201,12 @@ EOTEXT
           $author_dict = reset($authors);
 
           list($email) = $repository_api->execxLocal('config user.email');
-
+          $branch = $repository_api->getBranchName();
+          if (strlen($branch)) {
+            $upstream_path = $repository_api->getPathToUpstream($branch);
+            $remote_branch = $upstream_path->getRemoteBranchName();
+            $onto = "origin/" . $remote_branch;
+          }
           $author = sprintf('%s <%s>',
             $author_dict['realName'],
             $email);
@@ -227,6 +233,9 @@ EOTEXT
         $bundle = ArcanistBundle::newFromChanges($changes);
         $bundle->setBaseRevision(
           $repository_api->getSourceControlBaseRevision());
+        if ($onto != '') {
+          $bundle->setOnto($onto);
+        }
         // NOTE: we can't get a revision ID for SOURCE_LOCAL
 
         $parser = new PhutilEmailAddress($author);
