@@ -306,6 +306,10 @@ EOTEXT
       } else {
         $repository_api->execxLocal('checkout -b %s', $branch_name);
       }
+      $onto = $bundle->getOnto();
+      if ($onto) {
+        $repository_api->execxLocal('branch --set-upstream-to=%s', $onto);
+      }
 
       // Synchronize submodule state, since the checkout may have modified
       // submodule references. See PHI1083.
@@ -441,6 +445,33 @@ EOTEXT
         $repository_api->execManualLocal('fetch --quiet --all');
         $has_base_revision = $repository_api->hasLocalCommit(
           $bundle->getBaseRevision());
+      }
+    }
+
+    if (!$has_base_revision) {
+      if ($repository_api instanceof ArcanistGitAPI) {
+        // maybe the base is in the staging repo.
+        $staging = $this->getRepositoryStagingConfiguration();
+        if ($staging !== null) {
+          $staging_uri = idx($staging, 'uri');
+          if ($staging_uri) {
+
+            echo phutil_console_format(
+              "<bg:blue>** %s **</bg> %s\n",
+              pht('INFO'),
+              pht('Base commit is not in repository; trying to fetch from staging repo.'));
+            try {
+              $repository_api->execManualLocal(
+              'fetch %s %s --quiet',
+              $staging_uri,
+              $bundle->getBaseRevision());
+            } catch (Exception $ex) {
+              // do nothing
+            }
+            $has_base_revision = $repository_api->hasLocalCommit(
+              $bundle->getBaseRevision());
+          }
+        }
       }
     }
 
@@ -768,15 +799,37 @@ EOTEXT
           !$this->shouldBranch() &&
           $this->shouldCommit() && $has_base_revision) {
 
+        $to_cherry_pick = array();
+        try { // try picking any commits which have not already been applied to the original
+          list($foreach_lines) = $repository_api->execxLocal('cherry %s %s', $original_branch, $new_branch);
+          $foreach_lines = phutil_split_lines($foreach_lines, false);
+
+          foreach ($foreach_lines as $line) {
+            if (!strlen($line)) {
+              continue;
+            }
+            if (substr($line,0,1) == "+") {
+              $commit = substr($line, 2);
+              array_push($to_cherry_pick, $commit);
+            }
+          }
+        } catch (Exception $ex) { // if we fail we push the whole branch for cherry picking
+          $to_cherry_pick = array($new_branch);
+        }
+
         // See PHI1083 and PHI648. Synchronize submodule state after mutating
         // the working copy.
 
         $repository_api->execxLocal('checkout %s --', $original_branch);
         $repository_api->execPassthru('submodule update --init --recursive');
 
+
         $ex = null;
         try {
-          $repository_api->execxLocal('cherry-pick -- %s', $new_branch);
+          foreach ($to_cherry_pick as $commit) {
+            $repository_api->execxLocal('cherry-pick -- %s', $commit);
+          }
+
           $repository_api->execPassthru('submodule update --init --recursive');
         } catch (Exception $ex) {
           // do nothing

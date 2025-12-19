@@ -917,6 +917,7 @@ phutil_register_library_map(array(
     'PhutilXHPASTBinary' => 'parser/xhpast/bin/PhutilXHPASTBinary.php',
     'PlatformSymbols' => 'platform/PlatformSymbols.php',
     'PytestTestEngine' => 'unit/engine/PytestTestEngine.php',
+    'TMDiffTemplateReader' => 'workflow/TMDiffTemplateReader.php',
     'TempFile' => 'filesystem/TempFile.php',
     'TestAbstractDirectedGraph' => 'utils/__tests__/TestAbstractDirectedGraph.php',
     'XHPASTNode' => 'parser/xhpast/api/XHPASTNode.php',

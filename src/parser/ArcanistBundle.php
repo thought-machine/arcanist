@@ -10,6 +10,7 @@ final class ArcanistBundle extends Phobject {
   private $blobs = array();
   private $diskPath;
   private $baseRevision;
+  private $onto;
   private $revisionID;
   private $encoding;
   private $loadFileDataCallback;
@@ -69,6 +70,11 @@ final class ArcanistBundle extends Phobject {
     return $this;
   }
 
+  public function setOnto($branch) {
+    $this->onto = $branch;
+    return $this;
+  }
+
   public function setEncoding($encoding) {
     $this->encoding = $encoding;
     return $this;
@@ -89,6 +95,10 @@ final class ArcanistBundle extends Phobject {
 
   public function getBaseRevision() {
     return $this->baseRevision;
+  }
+
+  public function getOnto() {
+    return $this->onto;
   }
 
   public function setRevisionID($revision_id) {
@@ -149,6 +159,7 @@ final class ArcanistBundle extends Phobject {
       $encoding      = idx($meta_info, 'encoding');
       $author_name   = idx($meta_info, 'authorName');
       $author_email  = idx($meta_info, 'authorEmail');
+      $ontoBranch    = idx($meta_info, 'ontoBranch');
     } else {
       // this arc bundle was probably made before we started storing meta info
       $version       = 0;
@@ -156,6 +167,7 @@ final class ArcanistBundle extends Phobject {
       $revision_id   = null;
       $encoding      = null;
       $author        = null;
+      $ontoBranch    = null;
     }
 
     $future = new ExecFuture(
@@ -180,6 +192,7 @@ final class ArcanistBundle extends Phobject {
     $obj->setBaseRevision($base_revision);
     $obj->setRevisionID($revision_id);
     $obj->setEncoding($encoding);
+    $obj->setOnto($ontoBranch);
 
     return $obj;
   }
@@ -231,6 +244,7 @@ final class ArcanistBundle extends Phobject {
       'encoding'     => $this->getEncoding(),
       'authorName'   => $this->getAuthorName(),
       'authorEmail'  => $this->getAuthorEmail(),
+      'ontoBranch'   => $this->getOnto(),
     );
 
     $dir = Filesystem::createTemporaryDirectory();
@@ -762,7 +776,10 @@ final class ArcanistBundle extends Phobject {
       $old_data = $this->getBlob($old_phid, $name);
     }
 
-    $old_length = strlen($old_data);
+    $old_length = 0;
+    if ($old_data !== null) {
+      $old_length = strlen($old_data);
+    }
 
     // Here, and below, the binary will be emitted with base85 encoding. This
     // encoding encodes each 4 bytes of input in 5 bytes of output, so we may
@@ -795,7 +812,10 @@ final class ArcanistBundle extends Phobject {
       $new_data = $this->getBlob($new_phid, $name);
     }
 
-    $new_length = strlen($new_data);
+    $new_length = 0;
+    if ($new_data !== null) {
+      $new_length = strlen($new_data);
+    }
     $this->reserveBytes($new_length * 5 / 4);
 
     if ($new_data === null) {
