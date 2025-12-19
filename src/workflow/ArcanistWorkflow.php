@@ -1292,6 +1292,10 @@ abstract class ArcanistWorkflow extends Phobject {
       return false;
     }
 
+    if (count($commit['parents']) > 1) { // we don't want to ammend merge commits
+      return false;
+    }
+
     // TODO: Check commits since tracking branch. If empty then return false.
 
     // Don't amend the current commit if it has already been published.
@@ -1407,6 +1411,29 @@ abstract class ArcanistWorkflow extends Phobject {
     $bundle->setRevisionID(idx($diff, 'revisionID'));
     $bundle->setAuthorName(idx($diff, 'authorName'));
     $bundle->setAuthorEmail(idx($diff, 'authorEmail'));
+
+    $properties = idx($diff, 'properties');
+    if (!$properties) {
+      return $bundle;
+    }
+
+    $arc_onto = idx($properties, 'arc:onto');
+    if ($arc_onto == null) {
+      return $bundle;
+    }
+
+    $arc_onto = head($arc_onto);
+    if (idx($arc_onto, 'type') != 'branch') {
+      return $bundle;
+    }
+    if (!idx($arc_onto, 'name')) {
+      return $bundle;
+    }
+    $onto = idx($arc_onto, 'name');
+    if (idx($arc_onto, 'kind') == 'upstream') {
+        $onto = 'origin/' . $onto;
+    }
+    $bundle->setOnto($onto);
     return $bundle;
   }
 

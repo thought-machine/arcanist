@@ -52,7 +52,10 @@ final class ArcanistConsoleLintRenderer extends ArcanistLintRenderer {
     $path = $result->getPath();
     $data = $result->getData();
 
-    $line_map = $this->newOffsetMap($data);
+    $line_map = array();
+    if (isset($data)) {
+      $line_map = $this->newOffsetMap($data);
+    }
 
     $text = array();
     foreach ($messages as $message) {

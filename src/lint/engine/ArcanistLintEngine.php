@@ -467,7 +467,7 @@ abstract class ArcanistLintEngine extends Phobject {
     assert_instances_of($runnable, 'ArcanistLinter');
 
     $all_paths = $this->getPaths();
-    $path_chunks = array_chunk($all_paths, 32, $preserve_keys = true);
+    $path_chunks = array_chunk($all_paths, 512, $preserve_keys = true);
 
     $exception_lists = array();
     foreach ($path_chunks as $chunk) {
