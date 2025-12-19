@@ -505,7 +505,7 @@ EOTEXT
           foreach ($xactions as $i => &$xact) {
             if ($xact['type'] == "title") {
               if (substr($xact['value'], 0, strlen($prefix)) !== $prefix) {
-                $xact['value'] = $prefix." ".preg_replace('/^\[vault-.*?\] /', '', $title);
+                $xact['value'] = $prefix." ".preg_replace('/^\[[a-z-]*?-[0-9.]*?(?:-[a-z0-9.]+?)?\] /', '', $title);
               }
             }
           }

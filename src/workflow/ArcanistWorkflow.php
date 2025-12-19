@@ -1292,7 +1292,7 @@ abstract class ArcanistWorkflow extends Phobject {
       return false;
     }
 
-    if (count($commit['parents']) > 1) { // we don't want to ammend merge commits
+    if (count($commit['parents']) > 1) { // we don't want to amend merge commits
       return false;
     }
 
