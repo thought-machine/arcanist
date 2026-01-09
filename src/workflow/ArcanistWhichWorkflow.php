@@ -59,6 +59,9 @@ EOTEXT
         ),
         'supports' => array('git', 'hg'),
       ),
+      'show-revisions' => array(
+        'help' => pht("Print revision information only and exits.\nThis is a tab separated list of Revision ID, author, head commit and revision title."),
+      ),
       'head' => array(
         'param' => 'commit',
         'help' => pht('Specify the end of the commit range to select.'),
@@ -75,7 +78,7 @@ EOTEXT
   public function run() {
     $console = PhutilConsole::getConsole();
 
-    if (!$this->getArgument('show-base')) {
+    if (!$this->getArgument('show-base') && !$this->getArgument('show-revisions')) {
       $this->printRepositorySection();
       $console->writeOut("\n");
     }
@@ -137,39 +140,41 @@ EOTEXT
         throw new Exception(pht('Unknown VCS!'));
       }
 
-      echo phutil_console_wrap(
-        phutil_console_format(
-          "**%s**\n%s\n\n    %s  %s\n\n",
-          pht('COMMIT RANGE'),
-          pht(
-            "If you run '%s', changes between the commit:",
-            "arc diff{$arg}"),
-          $relative,
-          $relative_summary));
+      if (!$this->getArgument('show-base') && !$this->getArgument('show-revisions')) {
+        echo phutil_console_wrap(
+          phutil_console_format(
+            "**%s**\n%s\n\n    %s  %s\n\n",
+            pht('COMMIT RANGE'),
+            pht(
+              "If you run '%s', changes between the commit:",
+              "arc diff{$arg}"),
+            $relative,
+            $relative_summary));
 
-      if ($head_commit === null) {
-        $will_be_sent = pht(
-          '...and the current working copy state will be sent to '.
-          'Differential, because %s',
-          $explanation);
-      } else {
-        $will_be_sent = pht(
-          '...and "%s" will be sent to Differential, because %s',
-          $head_commit,
-          $explanation);
+        if ($head_commit === null) {
+          $will_be_sent = pht(
+            '...and the current working copy state will be sent to '.
+            'Differential, because %s',
+            $explanation);
+        } else {
+          $will_be_sent = pht(
+            '...and "%s" will be sent to Differential, because %s',
+            $head_commit,
+            $explanation);
+        }
+
+        echo phutil_console_wrap(
+          phutil_console_format(
+            "%s\n\n%s\n\n    $ %s\n\n%s\n\n",
+            $will_be_sent,
+            pht(
+              'You can see the exact changes that will be sent by running '.
+              'this command:'),
+            $command,
+            pht('These commits will be included in the diff:')));
+
+        echo $commits."\n\n\n";
       }
-
-      echo phutil_console_wrap(
-        phutil_console_format(
-          "%s\n\n%s\n\n    $ %s\n\n%s\n\n",
-          $will_be_sent,
-          pht(
-            'You can see the exact changes that will be sent by running '.
-            'this command:'),
-          $command,
-          pht('These commits will be included in the diff:')));
-
-      echo $commits."\n\n\n";
     }
 
     $any_status = $this->getArgument('any-status');
@@ -184,6 +189,15 @@ EOTEXT
       $this->getConduit(),
       $query);
 
+    if ($this->getArgument('show-revisions')) {
+      $authors = $this->getAuthors($revisions);
+      foreach ($revisions as $revision) {
+        $monogram = 'D'.$revision['id'];
+
+        echo pht("%s\t%s\t%s\t%s\n", $monogram, idx($authors, $revision['authorPHID']), idx($revision, 'headCommit'), $revision['title']);
+      }
+      return 0;
+    }
     echo phutil_console_wrap(
       phutil_console_format(
         "**%s**\n%s\n\n",
@@ -203,29 +217,14 @@ EOTEXT
             "'%s'.\n\n",
             "arc diff{$arg}")));
     } else {
-      $other_author_phids = array();
-      foreach ($revisions as $revision) {
-        if ($revision['authorPHID'] != $this->getUserPHID()) {
-          $other_author_phids[] = $revision['authorPHID'];
-        }
-      }
-
-      $other_authors = array();
-      if ($other_author_phids) {
-        $other_authors = $this->getConduit()->callMethodSynchronous(
-          'user.query',
-          array(
-            'phids' => $other_author_phids,
-          ));
-        $other_authors = ipull($other_authors, 'userName', 'phid');
-      }
+      $authors = $this->getAuthors($revisions);
 
       foreach ($revisions as $revision) {
         $title = $revision['title'];
         $monogram = 'D'.$revision['id'];
 
         if ($revision['authorPHID'] != $this->getUserPHID()) {
-          $author = $other_authors[$revision['authorPHID']];
+          $author = $authors[$revision['authorPHID']];
           echo pht("    %s (%s) %s\n", $monogram, $author, $title);
         } else {
           echo pht("    %s %s\n", $monogram, $title);
@@ -253,6 +252,23 @@ EOTEXT
     }
 
     return 0;
+  }
+
+  private function getAuthors($revisions) {
+    $author_phids = array();
+    foreach ($revisions as $revision) {
+      $author_phids[] = $revision['authorPHID'];
+    }
+    $authors = array();
+    if ($author_phids) {
+        $authors = $this->getConduit()->callMethodSynchronous(
+          'user.query',
+          array(
+            'phids' => $author_phids,
+          ));
+        $authors = ipull($authors, 'userName', 'phid');
+    }
+    return $authors;
   }
 
   private function printRepositorySection() {
