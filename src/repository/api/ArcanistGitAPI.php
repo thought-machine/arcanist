@@ -1213,6 +1213,7 @@ final class ArcanistGitAPI extends ArcanistRepositoryAPI {
         $results[$key]['why'] = pht(
           "Commit message for '%s' has explicit 'Differential Revision'.",
           $hash);
+        $results[$key]['headCommit'] = $hash;
       }
 
       return $results;
