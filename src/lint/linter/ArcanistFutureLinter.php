@@ -7,7 +7,7 @@ abstract class ArcanistFutureLinter extends ArcanistLinter {
   abstract protected function buildFutures(array $paths);
   abstract protected function resolveFuture($path, Future $future);
 
-  final protected function getFuturesLimit() {
+  protected function getFuturesLimit() {
     return 8;
   }
 
