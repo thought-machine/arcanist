@@ -334,6 +334,11 @@ EOTEXT
         'help' => pht(
           'After creating a diff or revision, open it in a web browser.'),
       ),
+      'needs-review' => array(
+        'help' => pht(
+          'Sends notification to the reviewers to notify them ',
+          'that revision is ready for review.'),
+      ),
       '*' => 'paths',
       'head' => array(
         'param' => 'commit',
