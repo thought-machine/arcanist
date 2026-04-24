@@ -26,8 +26,11 @@ final class ArcanistAliasEngine
     return $this->toolset;
   }
 
+  /**
+   * @param array<ArcanistWorkflow> $workflows
+   */
   public function setWorkflows(array $workflows) {
-    assert_instances_of($workflows, 'ArcanistWorkflow');
+    assert_instances_of($workflows, ArcanistWorkflow::class);
     $this->workflows = $workflows;
     return $this;
   }
@@ -67,7 +70,8 @@ final class ArcanistAliasEngine
       // This alias is not defined properly, so we're going to ignore it.
       unset($aliases[$key]);
 
-      $results[] = $this->newEffect(ArcanistAliasEffect::EFFECT_CONFIGURATION)
+      $results[] =
+        $this->newEffect(ArcanistAliasEffect::EFFECT_MISCONFIGURATION)
         ->setMessage(
           pht(
             'Configuration source ("%s") defines an invalid alias, which '.

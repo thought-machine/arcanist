@@ -490,10 +490,6 @@ EOTEXT
 
         echo pht('Updated an existing Differential revision:')."\n";
       } else {
-        // NOTE: We're either using "differential.revision.edit" (preferred)
-        // if we can, or falling back to "differential.createrevision"
-        // (the older way) if not.
-
         $xactions = $this->revisionTransactions;
 
         if ($this->ontoBranch && $this->ontoBranch !== 'master') {
@@ -543,22 +539,13 @@ EOTEXT
           $result_uri = id(new PhutilURI($this->getConduitURI()))
             ->setPath('/D'.$result_id);
         } else {
-          if ($is_draft) {
-            throw new ArcanistUsageException(
-              pht(
-                'You have specified "--draft", but the software version '.
-                'on the server is too old to support draft revisions. Omit '.
-                'the flag or upgrade the server software.'));
-          }
-
-          $revision = $this->dispatchWillCreateRevisionEvent($revision);
-
-          $result = $conduit->callMethodSynchronous(
-            'differential.createrevision',
-            $revision);
-
-          $result_uri = $result['uri'];
-          $result_id = $result['revisionid'];
+          // NOTE: "differential.revision.edit" relies on transactions code
+          // which does not exist prior to late October 2017.
+          throw new ArcanistUsageException(
+            pht(
+              'The software version on the server is too old to support this '.
+              'workflow. Upgrade the software version on the server to a '.
+              'version released after October 2017.'));
         }
 
         $revised_message = $conduit->callMethodSynchronous(
@@ -1902,8 +1889,8 @@ EOTEXT
    * errors (e.g., if the user typed a reviewer name incorrectly) and a
    * summary of the commits themselves.
    *
-   * @param dict  Local commit information.
-   * @return list Complex output, see summary.
+   * @param array $local Local commit information.
+   * @return array Complex output, see summary.
    * @task message
    */
   private function parseCommitMessagesIntoFields(array $local) {
@@ -2034,6 +2021,10 @@ EOTEXT
         if ($key == 'title') {
           // This has been handled above, and either assigned directly or
           // merged into the summary.
+          continue;
+        }
+
+        if ($value === null) {
           continue;
         }
 
@@ -2506,8 +2497,8 @@ EOTEXT
   /**
    * Update an arbitrary diff property.
    *
-   * @param string Diff property name.
-   * @param string Diff property value.
+   * @param string $name Diff property name.
+   * @param string $data Diff property value.
    * @return void
    *
    * @task diffprop
@@ -2582,8 +2573,11 @@ EOTEXT
 /* -(  File Uploads  )------------------------------------------------------- */
 
 
+  /**
+   * @param array<ArcanistDiffChange> $changes
+   */
   private function uploadFilesForChanges(array $changes) {
-    assert_instances_of($changes, 'ArcanistDiffChange');
+    assert_instances_of($changes, ArcanistDiffChange::class);
 
     // Collect all the files we need to upload.
 

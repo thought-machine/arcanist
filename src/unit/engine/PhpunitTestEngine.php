@@ -52,7 +52,7 @@ final class PhpunitTestEngine extends ArcanistUnitTestEngine {
       if (!Filesystem::pathExists($test_path)) {
         continue;
       }
-      $json_tmp = new TempFile();
+      $xml_tmp = new TempFile();
       $clover_tmp = null;
       $clover = null;
       if ($this->getEnableCoverage() !== false) {
@@ -64,10 +64,10 @@ final class PhpunitTestEngine extends ArcanistUnitTestEngine {
 
       $stderr = '-d display_errors=stderr';
 
-      $futures[$test_path] = new ExecFuture('%C %C %C --log-json %s %C %s',
-        $this->phpunitBinary, $config, $stderr, $json_tmp, $clover, $test_path);
+      $futures[$test_path] = new ExecFuture('%C %C %C --log-junit %s %C %s',
+        $this->phpunitBinary, $config, $stderr, $xml_tmp, $clover, $test_path);
       $tmpfiles[$test_path] = array(
-        'json' => $json_tmp,
+        'xml' => $xml_tmp,
         'clover' => $clover_tmp,
       );
     }
@@ -81,7 +81,7 @@ final class PhpunitTestEngine extends ArcanistUnitTestEngine {
 
       $results[] = $this->parseTestResults(
         $test,
-        $tmpfiles[$test]['json'],
+        $tmpfiles[$test]['xml'],
         $tmpfiles[$test]['clover'],
         $stderr);
     }
@@ -93,14 +93,14 @@ final class PhpunitTestEngine extends ArcanistUnitTestEngine {
    * Parse test results from phpunit json report.
    *
    * @param string $path Path to test
-   * @param string $json_tmp Path to phpunit json report
+   * @param string $xml_tmp Path to phpunit json report
    * @param string $clover_tmp Path to phpunit clover report
    * @param string $stderr Data written to stderr
    *
    * @return array
    */
-  private function parseTestResults($path, $json_tmp, $clover_tmp, $stderr) {
-    $test_results = Filesystem::readFile($json_tmp);
+  private function parseTestResults($path, $xml_tmp, $clover_tmp, $stderr) {
+    $test_results = Filesystem::readFile($xml_tmp);
     return id(new ArcanistPhpunitTestResultParser())
       ->setEnableCoverage($this->getEnableCoverage())
       ->setProjectRoot($this->projectRoot)
@@ -118,7 +118,7 @@ final class PhpunitTestEngine extends ArcanistUnitTestEngine {
    * TODO: Add support for finding tests in testsuite folders from
    * phpunit.xml configuration.
    *
-   * @param   string      PHP file to locate test cases for.
+   * @param   string      $path PHP file to locate test cases for.
    * @return  string|null Path to test cases, or null.
    */
   private function findTestFile($path) {
@@ -192,8 +192,8 @@ final class PhpunitTestEngine extends ArcanistUnitTestEngine {
    * ...or similar. This list will be further pruned by the caller; it is
    * intentionally filesystem-agnostic to be unit testable.
    *
-   * @param   string        PHP file to locate test cases for.
-   * @return  list<string>  List of directories to search for tests in.
+   * @param   string        $path PHP file to locate test cases for.
+   * @return  array<string> List of directories to search for tests in.
    */
   public static function getSearchLocationsForTests($path) {
     $file = basename($path);

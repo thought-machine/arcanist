@@ -39,7 +39,13 @@ final class ArcanistSubversionAPI extends ArcanistRepositoryAPI {
   protected function buildLocalFuture(array $argv) {
     $argv[0] = 'svn '.$argv[0];
 
-    $future = newv('ExecFuture', $argv);
+    $future = newv(ExecFuture::class, $argv);
+
+    // For historical reasons we run Subversion commands keeping env.
+    // But, let's keep English, to have a reliable parser.
+    // https://we.phorge.it/T15872
+    $future->updateEnv('LC_ALL', 'C');
+
     $future->setCWD($this->getPath());
     return $future;
   }
@@ -615,6 +621,15 @@ EODIFF;
   }
 
   public function supportsAmend() {
+    return false;
+  }
+
+  /**
+   * @return bool
+   */
+  public function supportsBranches() {
+    // Even if you are the best SVN salesman, a little cute
+    // directory cannot really be considered a "branch" feature.
     return false;
   }
 

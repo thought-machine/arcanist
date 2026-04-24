@@ -4,7 +4,7 @@
 /**
  * Base class for locks, like file locks.
  *
- * libphutil provides a concrete lock in @{class:PhutilFileLock}.
+ * Arcanist provides a concrete lock in @{class:PhutilFileLock}.
  *
  *   $lock->lock();
  *     do_contentious_things();
@@ -41,7 +41,7 @@ abstract class PhutilLock extends Phobject {
    * Build a new lock, given a lock name. The name should be globally unique
    * across all locks.
    *
-   * @param string Globally unique lock name.
+   * @param string $name Globally unique lock name.
    * @task construct
    */
   protected function __construct($name) {
@@ -55,7 +55,7 @@ abstract class PhutilLock extends Phobject {
   /**
    * Acquires the lock, or throws @{class:PhutilLockException} if it fails.
    *
-   * @param  float  Seconds to block waiting for the lock.
+   * @param  float $wait Seconds to block waiting for the lock.
    * @return void
    * @task impl
    */
@@ -88,7 +88,7 @@ abstract class PhutilLock extends Phobject {
   /**
    * Get a named lock, if it has been registered.
    *
-   * @param string Lock name.
+   * @param string $name Lock name.
    * @task registry
    */
   protected static function getLock($name) {
@@ -99,7 +99,7 @@ abstract class PhutilLock extends Phobject {
   /**
    * Register a lock for cleanup when the process exits.
    *
-   * @param PhutilLock Lock to register.
+   * @param PhutilLock $lock Lock to register.
    * @task registry
    */
   protected static function registerLock(PhutilLock $lock) {
@@ -144,9 +144,9 @@ abstract class PhutilLock extends Phobject {
    * If the lock is already held by this process, this method throws. You can
    * test the lock status with @{method:isLocked}.
    *
-   * @param  float  Seconds to block waiting for the lock. By default, do not
-   *                block.
-   * @return this
+   * @param  float $wait (optional) Seconds to block waiting for the lock. By
+   *               default, do not block.
+   * @return $this
    *
    * @task lock
    */
@@ -186,7 +186,7 @@ abstract class PhutilLock extends Phobject {
    * Release the lock. Throws an exception on failure, e.g. if the lock is not
    * currently held.
    *
-   * @return this
+   * @return $this
    *
    * @task lock
    */

@@ -17,8 +17,8 @@ final class ArcanistMercurialParser extends Phobject {
    * can get less detailed information with @{method:parseMercurialStatus}. In
    * particular, this will parse copy sources as per "hg status -C".
    *
-   * @param string The stdout from running an "hg status" command.
-   * @return dict Map of paths to status dictionaries.
+   * @param string $stdout The stdout from running an "hg status" command.
+   * @return array Map of paths to status dictionaries.
    * @task parse
    */
   public static function parseMercurialStatusDetails($stdout) {
@@ -96,8 +96,8 @@ final class ArcanistMercurialParser extends Phobject {
    * can get more detailed information by invoking
    * @{method:parseMercurialStatusDetails}.
    *
-   * @param string The stdout from running an "hg status" command.
-   * @return dict Map of paths to ArcanistRepositoryAPI status flags.
+   * @param string $stdout The stdout from running an "hg status" command.
+   * @return array Map of paths to ArcanistRepositoryAPI status flags.
    * @task parse
    */
   public static function parseMercurialStatus($stdout) {
@@ -110,8 +110,8 @@ final class ArcanistMercurialParser extends Phobject {
    * Parse the output of "hg log". This also parses "hg outgoing", "hg parents",
    * and other similar commands. This assumes "--style default".
    *
-   * @param string The stdout from running an "hg log" command.
-   * @return list List of dictionaries with commit information.
+   * @param string $stdout The stdout from running an "hg log" command.
+   * @return array List of dictionaries with commit information.
    * @task parse
    */
   public static function parseMercurialLog($stdout) {
@@ -194,8 +194,8 @@ final class ArcanistMercurialParser extends Phobject {
   /**
    * Parse the output of "hg branches".
    *
-   * @param string The stdout from running an "hg branches" command.
-   * @return list A list of dictionaries with branch information.
+   * @param string $stdout The stdout from running an "hg branches" command.
+   * @return array A list of dictionaries with branch information.
    * @task parse
    */
   public static function parseMercurialBranches($stdout) {

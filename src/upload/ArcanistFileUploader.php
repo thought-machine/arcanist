@@ -46,9 +46,9 @@ final class ArcanistFileUploader extends Phobject {
    * You can optionally provide an explicit key which will be used to identify
    * the file. After adding files, upload them with @{method:uploadFiles}.
    *
-   * @param ArcanistFileDataRef File data to upload.
-   * @param null|string Optional key to use to identify this file.
-   * @return this
+   * @param ArcanistFileDataRef $file File data to upload.
+   * @param null|string $key (optional) Key to use to identify this file.
+   * @return $this
    * @task add
    */
   public function addFile(ArcanistFileDataRef $file, $key = null) {
@@ -87,7 +87,7 @@ final class ArcanistFileUploader extends Phobject {
    * upload) or a list of errors. See @{class:ArcanistFileDataRef} for
    * details.
    *
-   * @return map<string, ArcanistFileDataRef> Files with results populated.
+   * @return array<string, ArcanistFileDataRef> Files with results populated.
    * @task upload
    */
   public function uploadFiles() {

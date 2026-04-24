@@ -55,9 +55,9 @@ abstract class AbstractDirectedGraph extends Phobject {
    * acceptable for your application) or throw an exception if you can't satisfy
    * this requirement.
    *
-   * @param   list  A list of nodes.
-   * @return  dict  A map of nodes to the nodes reachable along their edges.
-   *                There must be an entry for each node you were provided.
+   * @param   array  $nodes A list of nodes.
+   * @return  array  A map of nodes to the nodes reachable along their edges.
+   *                 There must be an entry for each node you were provided.
    * @task build
    */
   abstract protected function loadEdges(array $nodes);
@@ -68,8 +68,9 @@ abstract class AbstractDirectedGraph extends Phobject {
    * edges that a user is trying to create here, or the initial set of edges
    * you know about.
    *
-   * @param   dict  A map of nodes to the nodes reachable along their edges.
-   * @return  this
+   * @param   array $nodes A map of nodes to the nodes reachable along their
+   *   edges
+   * @return  $this
    * @task build
    */
   final public function addNodes(array $nodes) {
@@ -218,7 +219,7 @@ abstract class AbstractDirectedGraph extends Phobject {
    * constructs the graph level-by-level, calling @{method:loadEdges} to
    * expand the graph at each stage until it is complete.
    *
-   * @return this
+   * @return $this
    * @task build
    */
   final public function loadGraph() {
@@ -282,9 +283,9 @@ abstract class AbstractDirectedGraph extends Phobject {
    * NOTE: This only detects cycles reachable from a node. It does not detect
    * cycles in the entire graph.
    *
-   * @param   scalar    The node to walk from, looking for graph cycles.
-   * @return  list|null Returns null if no cycles are reachable from the node,
-   *                    or a list of nodes that form a cycle.
+   * @param   scalar     $node The node to walk from, looking for graph cycles.
+   * @return  array|null Returns null if no cycles are reachable from the node,
+   *                     or a list of nodes that form a cycle.
    * @task cycle
    */
   final public function detectCycles($node) {
@@ -312,9 +313,9 @@ abstract class AbstractDirectedGraph extends Phobject {
    * Internal cycle detection implementation. Recursively walks the graph,
    * keeping track of where it's been, and returns the first cycle it finds.
    *
-   * @param   scalar      The node to walk from.
-   * @param   list        Previously visited nodes.
-   * @return  null|list   Null if no cycles are found, or a list of nodes
+   * @param   scalar      $node The node to walk from.
+   * @param   array       $visited List of previously visited nodes.
+   * @return  null|array  Null if no cycles are found, or a list of nodes
    *                      which cycle.
    * @task cycle
    */

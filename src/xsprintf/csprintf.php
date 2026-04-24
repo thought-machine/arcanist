@@ -27,8 +27,8 @@
  * Generally, you should invoke shell commands via @{function:execx} rather
  * than by calling @{function:csprintf} directly.
  *
- * @param  string  sprintf()-style format string.
- * @param  ...     Zero or more arguments.
+ * @param  string  $pattern sprintf()-style format string.
+ * @param  string  $args,... Zero or more arguments.
  * @return PhutilCommandString  Formatted string, escaped appropriately for
  *   shell contexts.
  */
@@ -40,8 +40,8 @@ function csprintf($pattern /* , ... */) {
 /**
  * Version of @{function:csprintf} that takes a vector of arguments.
  *
- * @param  string  sprintf()-style format string.
- * @param  list    List of zero or more arguments to csprintf().
+ * @param  string  $pattern sprintf()-style format string.
+ * @param  array   $argv List of zero or more arguments to csprintf().
  * @return PhutilCommandString  Formatted string, escaped appropriately for
  *   shell contexts.
  */
@@ -121,7 +121,7 @@ function xsprintf_command($userdata, &$pattern, &$pos, &$value, &$length) {
     case 'P':
       if (!($value instanceof PhutilOpaqueEnvelope)) {
         throw new InvalidArgumentException(
-          pht('Expected %s for %%P conversion.', 'PhutilOpaqueEnvelope'));
+          pht('Expected %s for %%P conversion.', PhutilOpaqueEnvelope::class));
       }
       if ($is_unmasked) {
         $value = $value->openEnvelope();

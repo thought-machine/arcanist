@@ -52,11 +52,11 @@ final class FutureIterator
   /**
    * Create a new iterator over a list of futures.
    *
-   * @param list  List of @{class:Future}s to resolve.
+   * @param array<Future> $futures List of @{class:Future}s to resolve.
    * @task basics
    */
   public function __construct(array $futures) {
-    assert_instances_of($futures, 'Future');
+    assert_instances_of($futures, Future::class);
 
     foreach ($futures as $map_key => $future) {
       $future->setFutureKey($map_key);
@@ -90,7 +90,7 @@ final class FutureIterator
    * set of futures to run mostly in parallel, but some futures depend on
    * others.
    *
-   * @param Future  @{class:Future} to add to iterator
+   * @param Future $future @{class:Future} to add to iterator
    * @task basics
    */
   public function addFuture(Future $future) {
@@ -133,9 +133,9 @@ final class FutureIterator
    * This will echo "Still working..." once per second as long as futures are
    * resolving. By default, FutureIterator never yields null.
    *
-   * @param float Maximum number of seconds to block waiting on futures before
-   *              yielding null.
-   * @return this
+   * @param float $interval Maximum number of seconds to block waiting on
+   *              futures before yielding null.
+   * @return $this
    *
    * @task config
    */
@@ -154,8 +154,8 @@ final class FutureIterator
    *    // Run no more than 4 futures simultaneously.
    *  }
    *
-   * @param int Maximum number of simultaneous jobs allowed.
-   * @return this
+   * @param int $max Maximum number of simultaneous jobs allowed.
+   * @return $this
    *
    * @task config
    */
@@ -417,9 +417,9 @@ final class FutureIterator
   /**
    * Wait for activity on one of several sockets.
    *
-   * @param  list  List of sockets expected to become readable.
-   * @param  list  List of sockets expected to become writable.
-   * @param  float Timeout, in seconds.
+   * @param  array  $read_list List of sockets expected to become readable.
+   * @param  array  $write_list List of sockets expected to become writable.
+   * @param  float $timeout (optional) Timeout, in seconds.
    * @return void
    */
   private function waitForSockets(

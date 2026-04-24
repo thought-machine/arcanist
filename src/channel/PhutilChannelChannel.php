@@ -7,6 +7,11 @@
  * semantics with @{class:PhutilProtocolChannel}).
  *
  * The implementation of this class is entirely uninteresting.
+ *
+ * @template TRead
+ * @template TWrite
+ *
+ * @extends PhutilChannel<TRead,TWrite>
  */
 abstract class PhutilChannelChannel extends PhutilChannel {
 
@@ -53,10 +58,12 @@ abstract class PhutilChannelChannel extends PhutilChannel {
 
   protected function readBytes($length) {
     $this->throwOnRawByteOperations();
+    return ''; // Never returned but makes static code analyzers happy
   }
 
   protected function writeBytes($bytes) {
     $this->throwOnRawByteOperations();
+    return -1; // Never returned but makes static code analyzers happy
   }
 
   protected function getReadSockets() {

@@ -13,8 +13,11 @@
  *
  *    id(new Thing())->doStuff();
  *
- * @param   wild Anything.
- * @return  wild Unmodified argument.
+ * See also https://we.phorge.it/T15976
+ *
+ * @template T
+ * @param   T $x Anything
+ * @return  T Unmodified argument.
  */
 function id($x) {
   return $x;
@@ -26,11 +29,13 @@ function id($x) {
  * a default if it does not. This function allows you to concisely access an
  * index which may or may not exist without raising a warning.
  *
- * @param   array   Array to access.
- * @param   scalar  Index to access in the array.
- * @param   wild    Default value to return if the key is not present in the
- *                  array.
- * @return  wild    If `$array[$key]` exists, that value is returned. If not,
+ * @template T
+ * @template D
+ * @param   array<scalar, T> $array Array to access.
+ * @param   scalar  $key Index to access in the array.
+ * @param   ?D      $default (optional) Default value to return if the key is
+ *                  not present in the array.
+ * @return  T|D     If `$array[$key]` exists, that value is returned. If not,
  *                  $default is returned without raising a warning.
  */
 function idx(array $array, $key, $default = null) {
@@ -54,12 +59,12 @@ function idx(array $array, $key, $default = null) {
  *
  * For example, `idxv($dict, array('a', 'b', 'c'))` accesses the key at
  * `$dict['a']['b']['c']`, if it exists. If it does not, or any intermediate
- * value is not itself an array, it returns the defualt value.
+ * value is not itself an array, it returns the default value.
  *
- * @param array Array to access.
- * @param list<string> List of keys to access, in sequence.
- * @param wild Default value to return.
- * @return wild Accessed value, or default if the value is not accessible.
+ * @param array $map Array to access.
+ * @param array<string> $path List of keys to access, in sequence.
+ * @param mixed $default (optional) Default value to return.
+ * @return mixed Accessed value, or default if the value is not accessible.
  */
 function idxv(array $map, array $path, $default = null) {
   if (!$path) {
@@ -125,16 +130,17 @@ function idxv(array $map, array $path, $default = null) {
  * See also @{function:ipull}, which works similarly but accesses array indexes
  * instead of calling methods.
  *
- * @param   list          Some list of objects.
- * @param   string|null   Determines which **values** will appear in the result
- *                        array. Use a string like 'getName' to store the
- *                        value of calling the named method in each value, or
- *                        ##null## to preserve the original objects.
- * @param   string|null   Determines how **keys** will be assigned in the result
- *                        array. Use a string like 'getID' to use the result
+ * @param   array         $list Some list of objects.
+ * @param   string|null   $method Determines which **values** will appear in
+ *                        the result array. Use a string like 'getName' to
+ *                        store the value of calling the named method in each
+ *                        value, or ##null## to preserve the original objects.
+ * @param   string|null   $key_method (optional) Determines how **keys** will
+ *                        be assigned in the result array.
+ *                        Use a string like 'getID' to use the result
  *                        of calling the named method as each object's key, or
  *                        `null` to preserve the original keys.
- * @return  dict          A dictionary with keys and values derived according
+ * @return  array         A dictionary with keys and values derived according
  *                        to whatever you passed as `$method` and `$key_method`.
  */
 function mpull(array $list, $method, $key_method = null) {
@@ -198,16 +204,17 @@ function mpull(array $list, $method, $key_method = null) {
  * See also @{function:mpull}, which works similarly but calls object methods
  * instead of accessing object properties.
  *
- * @param   list          Some list of objects.
- * @param   string|null   Determines which **values** will appear in the result
- *                        array. Use a string like 'name' to store the value of
- *                        accessing the named property in each value, or
- *                        `null` to preserve the original objects.
- * @param   string|null   Determines how **keys** will be assigned in the result
- *                        array. Use a string like 'id' to use the result of
- *                        accessing the named property as each object's key, or
- *                        `null` to preserve the original keys.
- * @return  dict          A dictionary with keys and values derived according
+ * @param   array         $list Some list of objects.
+ * @param   string|null   $property Determines which **values** will appear in
+ *                        the result array. Use a string like 'name' to store
+ *                        the value of accessing the named property in each
+ *                        value, or `null` to preserve the original objects.
+ * @param   string|null   $key_property (optional) Determines how **keys** will
+ *                        be assigned in the result array. Use a string like
+ *                        'id' to use the result of accessing the named property
+ *                        as each object's key, or `null` to preserve the
+ *                        original keys.
+ * @return  array         A dictionary with keys and values derived according
  *                        to whatever you passed as `$property` and
  *                        `$key_property`.
  */
@@ -248,15 +255,16 @@ function ppull(array $list, $property, $key_property = null) {
  *
  * See @{function:mpull} for more usage examples.
  *
- * @param   list          Some list of arrays.
- * @param   scalar|null   Determines which **values** will appear in the result
- *                        array. Use a scalar to select that index from each
- *                        array, or null to preserve the arrays unmodified as
- *                        values.
- * @param   scalar|null   Determines which **keys** will appear in the result
- *                        array. Use a scalar to select that index from each
- *                        array, or null to preserve the array keys.
- * @return  dict          A dictionary with keys and values derived according
+ * @param   array         $list Some list of arrays.
+ * @param   scalar|null   $index Determines which **values** will appear in the
+ *                        result array. Use a scalar to select that index from
+ *                        each array, or null to preserve the arrays unmodified
+ *                        as values.
+ * @param   scalar|null   $key_index (optional) Determines which **keys** will
+ *                        appear in the result array. Use a scalar to select
+ *                        that index from each array, or null to preserve the
+ *                        array keys.
+ * @return  array         A dictionary with keys and values derived according
  *                        to whatever you passed for `$index` and `$key_index`.
  */
 function ipull(array $list, $index, $key_index = null) {
@@ -299,12 +307,13 @@ function ipull(array $list, $index, $key_index = null) {
  * See also @{function:igroup}, which works the same way but operates on
  * array indexes.
  *
- * @param   list    List of objects to group by some property.
- * @param   string  Name of a method, like 'getType', to call on each object
- *                  in order to determine which group it should be placed into.
- * @param   ...     Zero or more additional method names, to subgroup the
- *                  groups.
- * @return  dict    Dictionary mapping distinct method returns to lists of
+ * @param   array   $list List of objects to group by some property.
+ * @param   string  $by Name of a method, like 'getType', to call on each
+ *                  object in order to determine which group it should be
+ *                  placed into.
+ * @param   string  $methods,... Zero or more additional method names, to
+ *                  subgroup the groups.
+ * @return  array   Dictionary mapping distinct method returns to lists of
  *                  all objects which returned that value.
  */
 function mgroup(array $list, $by /* , ... */) {
@@ -339,12 +348,12 @@ function mgroup(array $list, $by /* , ... */) {
  * as @{function:mgroup}, except it operates on the values of array indexes
  * rather than the return values of method calls.
  *
- * @param   list    List of arrays to group by some index value.
- * @param   string  Name of an index to select from each array in order to
+ * @param   array   $list List of arrays to group by some index value.
+ * @param   string  $by Name of an index to select from each array in order to
  *                  determine which group it should be placed into.
- * @param   ...     Zero or more additional indexes names, to subgroup the
- *                  groups.
- * @return  dict    Dictionary mapping distinct index values to lists of
+ * @param   string  $methods,... Zero or more additional indexes names, to
+ *                  subgroup the groups.
+ * @return  array   Dictionary mapping distinct index values to lists of
  *                  all objects which had that value at the index.
  */
 function igroup(array $list, $by /* , ... */) {
@@ -386,10 +395,12 @@ function igroup(array $list, $by /* , ... */) {
  *
  * NOTE: This method does not take the list by reference; it returns a new list.
  *
- * @param   list    List of objects to sort by some property.
- * @param   string  Name of a method to call on each object; the return values
- *                  will be used to sort the list.
- * @return  list    Objects ordered by the return values of the method calls.
+ * @template T
+ * @param    array<T> $list List of objects to sort by some property.
+ * @param    string   $method Name of a method to call on each object;
+ *                    the return values will be used to sort the list.
+ * @return   array<T> List of objects ordered by the return values of
+ *                    the method calls.
  */
 function msort(array $list, $method) {
   $surrogate = mpull($list, $method);
@@ -427,15 +438,25 @@ function msort(array $list, $method) {
  *
  * This sort is stable, well-behaved, and more efficient than `usort()`.
  *
- * @param list List of objects to sort.
- * @param string Name of a method to call on each object. The method must
- *   return a @{class:PhutilSortVector}.
- * @return list Objects ordered by the vectors.
+ * @template T
+ * @param    array<T> $list List of objects to sort.
+ * @param    string   $method Name of a method to call on each object.
+ *                    The method must return a @{class:PhutilSortVector}.
+ * @return   array<T> List of objects ordered by the vectors.
  */
 function msortv(array $list, $method) {
   return msortv_internal($list, $method, SORT_STRING);
 }
 
+/**
+ * Sort a list of objects by a sort vector using natural sort.
+ *
+ * @template T
+ * @param    array<T> $list List of objects to sort.
+ * @param    string   $method Name of a method to call on each object.
+ *                    The method must return a @{class:PhutilSortVector}.
+ * @return   array<T> List of objects ordered by the vectors.
+ */
 function msortv_natural(array $list, $method) {
   return msortv_internal($list, $method, SORT_NATURAL | SORT_FLAG_CASE);
 }
@@ -452,7 +473,7 @@ function msortv_internal(array $list, $method, $flags) {
           'class "%s") from the specified method ("%s"). One object (with '.
           'key "%s") did not.',
           'msortv()',
-          'PhutilSortVector',
+          PhutilSortVector::class,
           $method,
           $key));
     }
@@ -479,10 +500,11 @@ function msortv_internal(array $list, $method, $flags) {
  * @{function:msort}, but operates on a list of arrays instead of a list of
  * objects.
  *
- * @param   list    List of arrays to sort by some index value.
- * @param   string  Index to access on each object; the return values
- *                  will be used to sort the list.
- * @return  list    Arrays ordered by the index values.
+ * @template T
+ * @param    array<T> $list List of arrays to sort by some index value.
+ * @param    string   $index Index to access on each object; the return values
+ *                    will be used to sort the list.
+ * @return   array<T> Arrays ordered by the index values.
  */
 function isort(array $list, $index) {
   $surrogate = ipull($list, $index);
@@ -514,11 +536,12 @@ function isort(array $list, $index) {
  *
  *   mfilter($list, 'hasChildren', true);
  *
- * @param  array        List of objects to filter.
- * @param  string       A method name.
- * @param  bool         Optionally, pass true to drop objects which pass the
- *                      filter instead of keeping them.
- * @return array        List of objects which pass the filter.
+ * @template T
+ * @param    array<T>     $list List of objects to filter.
+ * @param    string       $method A method name.
+ * @param    bool         $negate (optional) Pass true to drop objects which
+ *                        pass the filter instead of keeping them.
+ * @return   array<T>     List of objects which pass the filter.
  */
 function mfilter(array $list, $method, $negate = false) {
   if (!is_string($method)) {
@@ -559,11 +582,12 @@ function mfilter(array $list, $method, $negate = false) {
  *
  *   ifilter($list, 'username', true);
  *
- * @param  array        List of arrays to filter.
- * @param  scalar       The index.
- * @param  bool         Optionally, pass true to drop arrays which pass the
- *                      filter instead of keeping them.
- * @return array        List of arrays which pass the filter.
+ * @template T
+ * @param    array<T>     $list List of arrays to filter.
+ * @param    scalar       $index The index.
+ * @param    bool         $negate (optional) Pass true to drop arrays which
+ *                        pass the filter instead of keeping them.
+ * @return   array<T>     List of arrays which pass the filter.
  */
 function ifilter(array $list, $index, $negate = false) {
   if (!is_scalar($index)) {
@@ -598,11 +622,11 @@ function ifilter(array $list, $index, $negate = false) {
  * uses: either reducing a large dictionary to a smaller one, or changing the
  * key order on an existing dictionary.
  *
- * @param  dict    Dictionary of key-value pairs to select from.
- * @param  list    List of keys to select.
- * @return dict    Dictionary of only those key-value pairs where the key was
- *                 present in the list of keys to select. Ordering is
- *                 determined by the list order.
+ * @param  array   $dict Dictionary of key-value pairs to select from.
+ * @param  array<string> $keys List of keys to select.
+ * @return array         Dictionary of only those key-value pairs where the key
+ *                       was present in the list of keys to select. Ordering is
+ *                       determined by the list order.
  */
 function array_select_keys(array $dict, array $keys) {
   $result = array();
@@ -619,8 +643,8 @@ function array_select_keys(array $dict, array $keys) {
  * Checks if all values of array are instances of the passed class. Throws
  * `InvalidArgumentException` if it isn't true for any value.
  *
- * @param  array
- * @param  string  Name of the class or 'array' to check arrays.
+ * @param  array   $arr
+ * @param  string  $class Name of the class or 'array' to check arrays.
  * @return array   Returns passed array.
  */
 function assert_instances_of(array $arr, $class) {
@@ -657,8 +681,8 @@ function assert_instances_of(array $arr, $class) {
 /**
  * Assert that two arrays have the exact same keys, in any order.
  *
- * @param map Array with expected keys.
- * @param map Array with actual keys.
+ * @param array $expect Array with expected keys.
+ * @param array $actual Array with actual keys.
  * @return void
  */
 function assert_same_keys(array $expect, array $actual) {
@@ -689,7 +713,7 @@ function assert_same_keys(array $expect, array $actual) {
 /**
  * Assert that passed data can be converted to string.
  *
- * @param  string    Assert that this data is valid.
+ * @param  string   $parameter Assert that this data is valid.
  * @return void
  *
  * @task   assert
@@ -724,7 +748,7 @@ function assert_stringlike($parameter) {
  * Returns the first argument which is not strictly null, or `null` if there
  * are no such arguments. Identical to the MySQL function of the same name.
  *
- * @param  ...         Zero or more arguments of any type.
+ * @param  mixed       $args,... Zero or more arguments of any type.
  * @return mixed       First non-`null` arg, or null if no such arg exists.
  */
 function coalesce(/* ... */) {
@@ -746,7 +770,7 @@ function coalesce(/* ... */) {
  *
  *   $display_name = nonempty($user_name, $full_name, "Anonymous");
  *
- * @param  ...         Zero or more arguments of any type.
+ * @param  mixed       $args,... Zero or more arguments of any type.
  * @return mixed       First non-`empty()` arg, or last arg if no such arg
  *                     exists, or null if you passed in zero args.
  */
@@ -792,9 +816,9 @@ function nonempty(/* ... */) {
  * constructors can be invoked with `call_user_func_array()`, and may give your
  * class a cleaner and more descriptive API.
  *
- * @param  string  The name of a class.
- * @param  list    Array of arguments to pass to its constructor.
- * @return obj     A new object of the specified class, constructed by passing
+ * @param  string  $class_name The name of a class.
+ * @param  array   $argv Array of arguments to pass to its constructor.
+ * @return object  A new object of the specified class, constructed by passing
  *                 the argument vector to its constructor.
  */
 function newv($class_name, array $argv) {
@@ -812,8 +836,9 @@ function newv($class_name, array $argv) {
  * choke if you pass it some non-referenceable value like the return value of
  * a function.
  *
- * @param    array Array to retrieve the first element from.
- * @return   wild  The first value of the array.
+ * @template T
+ * @param    array<T> $arr Array to retrieve the first element from.
+ * @return   T|false  The first value of the array.
  */
 function head(array $arr) {
   return reset($arr);
@@ -824,8 +849,9 @@ function head(array $arr) {
  * that it won't warn you if you pass some non-referencable array to
  * it -- e.g., the result of some other array operation.
  *
- * @param    array Array to retrieve the last element from.
- * @return   wild  The last value of the array.
+ * @template T
+ * @param    array<T> $arr Array to retrieve the last element from.
+ * @return   T|false  The last value of the array.
  */
 function last(array $arr) {
   return end($arr);
@@ -834,7 +860,7 @@ function last(array $arr) {
 /**
  * Returns the first key of an array.
  *
- * @param    array       Array to retrieve the first key from.
+ * @param    array       $arr Array to retrieve the first key from.
  * @return   int|string  The first key of the array.
  */
 function head_key(array $arr) {
@@ -845,7 +871,7 @@ function head_key(array $arr) {
 /**
  * Returns the last key of an array.
  *
- * @param    array       Array to retrieve the last key from.
+ * @param    array       $arr Array to retrieve the last key from.
  * @return   int|string  The last key of the array.
  */
 function last_key(array $arr) {
@@ -864,8 +890,8 @@ function last_key(array $arr) {
  * merge them with this function than by calling array_merge() in a loop,
  * because using a loop generates an intermediary array on each iteration.
  *
- * @param list Vector of arrays to merge.
- * @return list Arrays, merged with array_merge() semantics.
+ * @param array $arrayv Vector of arrays to merge.
+ * @return array Arrays, merged with array_merge() semantics.
  */
 function array_mergev(array $arrayv) {
   if (!$arrayv) {
@@ -901,8 +927,9 @@ function array_mergev(array $arrayv) {
  * of SVN, Git or Mercurial do on any OS.
  *
  * @param string|PhutilSafeHTML $corpus Block of text to be split into lines.
- * @param bool If true, retain line endings in result strings.
- * @return list List of lines.
+ * @param bool $retain_endings (optional) If true, retain line endings in
+ *   result strings.
+ * @return array<string> List of lines.
  *
  * @phutil-external-symbol class PhutilSafeHTML
  * @phutil-external-symbol function phutil_safe_html
@@ -921,7 +948,7 @@ function phutil_split_lines($corpus, $retain_endings = true) {
 
   // If the text ends with "\n" or similar, we'll end up with an empty string
   // at the end; discard it.
-  if (end($lines) == '') {
+  while ($lines && end($lines) == '') {
     array_pop($lines);
   }
 
@@ -951,10 +978,10 @@ function phutil_split_lines($corpus, $retain_endings = true) {
  *
  *   $result = array_fuse($list);
  *
- * @param   list  List of scalars.
- * @return  dict  Dictionary with inputs mapped to themselves.
+ * @param   ?array<scalar> $list (optional) List of scalars.
+ * @return  array Dictionary with inputs mapped to themselves.
  */
-function array_fuse(array $list = null) {
+function array_fuse(?array $list = null) {
   if ($list) {
     return array_combine($list, $list);
   }
@@ -976,9 +1003,9 @@ function array_fuse(array $list = null) {
  *
  * This function does not preserve keys.
  *
- * @param wild  Element to interleave.
- * @param list  List of elements to be interleaved.
- * @return list Original list with the new element interleaved.
+ * @param mixed $interleave Element to interleave.
+ * @param array $array List of elements to be interleaved.
+ * @return array Original list with the new element interleaved.
  */
 function array_interleave($interleave, array $array) {
   $result = array();
@@ -1004,7 +1031,7 @@ function phutil_is_hiphop_runtime() {
 /**
  * Converts a string to a loggable one, with unprintables and newlines escaped.
  *
- * @param string  Any string.
+ * @param string  $string Any string.
  * @return string String with control and newline characters escaped, suitable
  *                for printing on a single log line.
  */
@@ -1055,8 +1082,8 @@ function phutil_loggable_string($string) {
  * when a zero-length write is caused by EAGAIN and return `0` only if the
  * write really should be retried.
  *
- * @param resource  Socket or pipe stream.
- * @param string    Bytes to write.
+ * @param resource  $stream Socket or pipe stream.
+ * @param string    $bytes Bytes to write.
  * @return bool|int Number of bytes written, or `false` on any error (including
  *                  errors which `fwrite()` can not detect, like a broken pipe).
  */
@@ -1135,7 +1162,7 @@ function phutil_fwrite_nonblocking_stream($stream, $bytes) {
  *
  * ...which is self-documenting and difficult to make a mistake with.
  *
- * @param   string  Human readable description of a unit quantity.
+ * @param   string  $description Human readable description of a unit quantity.
  * @return  int     Quantity of specified unit.
  */
 function phutil_units($description) {
@@ -1278,7 +1305,8 @@ function phutil_units($description) {
  * Compute the number of microseconds that have elapsed since an earlier
  * timestamp (from `microtime(true)`).
  *
- * @param double Microsecond-precision timestamp, from `microtime(true)`.
+ * @param double $timestamp Microsecond-precision timestamp, from
+ *   `microtime(true)`.
  * @return int Elapsed microseconds.
  */
 function phutil_microseconds_since($timestamp) {
@@ -1300,8 +1328,8 @@ function phutil_microseconds_since($timestamp) {
 /**
  * Decode a JSON dictionary.
  *
- * @param   string    A string which ostensibly contains a JSON-encoded list or
- *                    dictionary.
+ * @param   string    $string A string which ostensibly contains a JSON-encoded
+ *                    list or dictionary.
  * @return  mixed     Decoded list/dictionary.
  */
 function phutil_json_decode($string) {
@@ -1321,7 +1349,7 @@ function phutil_json_decode($string) {
 /**
  * Encode a value in JSON, raising an exception if it can not be encoded.
  *
- * @param wild A value to encode.
+ * @param mixed $value A value to encode.
  * @return string JSON representation of the value.
  */
 function phutil_json_encode($value) {
@@ -1361,8 +1389,8 @@ function phutil_json_encode($value) {
 /**
  * Produce a human-readable explanation why a value can not be JSON-encoded.
  *
- * @param wild Value to validate.
- * @param string Path within the object to provide context.
+ * @param mixed $value Value to validate.
+ * @param string $path (optional) Path within the object to provide context.
  * @return string|null Explanation of why it can't be encoded, or null.
  */
 function phutil_validate_json($value, $path = '') {
@@ -1434,7 +1462,7 @@ function phutil_validate_json($value, $path = '') {
 /**
  * Decode an INI string.
  *
- * @param  string
+ * @param  string $string
  * @return mixed
  */
 function phutil_ini_decode($string) {
@@ -1442,22 +1470,7 @@ function phutil_ini_decode($string) {
   $trap = new PhutilErrorTrap();
 
   try {
-    $have_call = false;
-    if (function_exists('parse_ini_string')) {
-      if (defined('INI_SCANNER_RAW')) {
-        $results = @parse_ini_string($string, true, INI_SCANNER_RAW);
-        $have_call = true;
-      }
-    }
-
-    if (!$have_call) {
-      throw new PhutilMethodNotImplementedException(
-        pht(
-          '%s is not compatible with your version of PHP (%s). This function '.
-          'is only supported on PHP versions newer than 5.3.0.',
-          __FUNCTION__,
-          phpversion()));
-    }
+    $results = @parse_ini_string($string, true, INI_SCANNER_RAW);
 
     if ($results === false) {
       throw new PhutilINIParserException(trim($trap->getErrorsAsString()));
@@ -1507,9 +1520,10 @@ function phutil_ini_decode($string) {
  * output. For example, when `git fetch` fails, the output includes credentials
  * for authenticated HTTP remotes.
  *
- * @param   string  Some block of text.
- * @return  string  A similar block of text, but with credentials that could
- *                  be identified censored.
+ * @param   string  $string Some block of text.
+ * @return  string|null  A similar block of text, but with credentials that
+ *                       could be identified censored.
+ *                       Null only if an error occurred.
  */
 function phutil_censor_credentials($string) {
   return preg_replace(',(?<=://)([^/@\s]+)(?=@|$),', '********', $string);
@@ -1522,7 +1536,7 @@ function phutil_censor_credentials($string) {
  * This function is intended to behave similarly to PHP's `var_export` function,
  * but the output is intended to follow our style conventions.
  *
- * @param  wild    The variable you want to export.
+ * @param  mixed    $var The variable you want to export.
  * @return string
  */
 function phutil_var_export($var) {
@@ -1569,8 +1583,8 @@ function phutil_var_export($var) {
 /**
  * An improved version of `fnmatch`.
  *
- * @param  string  A glob pattern.
- * @param  string  A path.
+ * @param  string  $glob A glob pattern.
+ * @param  string  $path A path.
  * @return bool
  */
 function phutil_fnmatch($glob, $path) {
@@ -1654,8 +1668,8 @@ function phutil_fnmatch($glob, $path) {
  * It is questionable how practical these attacks are, but they are possible
  * in theory and defusing them is straightforward.
  *
- * @param string First hash.
- * @param string Second hash.
+ * @param string $u First hash.
+ * @param string $v Second hash.
  * @return bool True if hashes are identical.
  */
 function phutil_hashes_are_identical($u, $v) {
@@ -1685,7 +1699,7 @@ function phutil_hashes_are_identical($u, $v) {
 /**
  * Build a query string from a dictionary.
  *
- * @param map<string, string> Dictionary of parameters.
+ * @param array<string, string> $parameters Dictionary of parameters.
  * @return string HTTP query string.
  */
 function phutil_build_http_querystring(array $parameters) {
@@ -1700,7 +1714,7 @@ function phutil_build_http_querystring(array $parameters) {
 /**
  * Build a query string from a list of parameter pairs.
  *
- * @param list<pair<string, string>> List of pairs.
+ * @param array<array<string, string>> $pairs List of pairs.
  * @return string HTTP query string.
  */
 function phutil_build_http_querystring_from_pairs(array $pairs) {
@@ -1732,16 +1746,17 @@ function phutil_build_http_querystring_from_pairs(array $pairs) {
  *
  * Scalar values are converted to strings. Nonscalar values raise exceptions.
  *
- * @param scalar HTTP parameter key.
- * @param scalar HTTP parameter value.
- * @return pair<string, string> Key and value as strings.
+ * @param scalar $key HTTP parameter key.
+ * @param scalar $value HTTP parameter value.
+ * @return array<string, string> Key and value as strings.
  */
 function phutil_http_parameter_pair($key, $value) {
   try {
     assert_stringlike($key);
   } catch (InvalidArgumentException $ex) {
-    throw new PhutilProxyException(
+    throw new Exception(
       pht('HTTP query parameter key must be a scalar.'),
+      0,
       $ex);
   }
 
@@ -1750,10 +1765,11 @@ function phutil_http_parameter_pair($key, $value) {
   try {
     assert_stringlike($value);
   } catch (InvalidArgumentException $ex) {
-    throw new PhutilProxyException(
+    throw new Exception(
       pht(
         'HTTP query parameter value (for key "%s") must be a scalar.',
         $key),
+      0,
       $ex);
   }
 
@@ -1799,7 +1815,7 @@ function phutil_decode_mime_header($header) {
  * We also reject arrays. PHP casts them to the string "Array". This behavior
  * is, charitably, evil.
  *
- * @param wild Any value which aspires to be represented as a string.
+ * @param mixed $value Any value which aspires to be represented as a string.
  * @return string String representation of the provided value.
  */
 function phutil_string_cast($value) {
@@ -1836,7 +1852,7 @@ function phutil_string_cast($value) {
  * This is similar to "get_type()", but describes objects and arrays in more
  * detail.
  *
- * @param wild Anything.
+ * @param mixed $value Anything.
  * @return string Human-readable description of the value's type.
  */
 function phutil_describe_type($value) {
@@ -1884,7 +1900,7 @@ function phutil_is_natural_list(array $list) {
  * you have more information, like you know the format of the suffix). For infix
  * URI components, use @{function:phutil_escape_uri_path_component} instead.
  *
- * @param   string  Some string.
+ * @param   string  $string Some string.
  * @return  string  URI encoded string, except for '/'.
  */
 function phutil_escape_uri($string) {
@@ -1908,7 +1924,7 @@ function phutil_escape_uri($string) {
  * @{function:phutil_unescape_uri_path_component} before it can be used in the
  * application.
  *
- * @param   string  Some string.
+ * @param   string  $string Some string.
  * @return  string  URI encoded string that is safe for infix composition.
  */
 function phutil_escape_uri_path_component($string) {
@@ -1926,7 +1942,7 @@ function phutil_escape_uri_path_component($string) {
  * which is added to survive the implied unescaping performed by the webserver
  * when interpreting the request.
  *
- * @param string  Some string emitted
+ * @param string  $string Some string emitted
  *                from @{function:phutil_escape_uri_path_component} and
  *                then accessed via a web server.
  * @return string Original string.
@@ -2108,7 +2124,7 @@ function phutil_raise_preg_exception($function, array $argv) {
  * This method raises an exception if passed a value which is neither null
  * nor a string.
  *
- * @param Value to test.
+ * @param $value Value to test.
  * @return bool True if the parameter is a nonempty string.
  */
 function phutil_nonempty_string($value) {
@@ -2142,7 +2158,7 @@ function phutil_nonempty_string($value) {
  *
  * This method raises an exception if passed any other value.
  *
- * @param Value to test.
+ * @param $value Value to test.
  * @return bool True if the parameter is a nonempty, stringlike value.
  */
 function phutil_nonempty_stringlike($value) {
@@ -2192,7 +2208,7 @@ function phutil_nonempty_stringlike($value) {
  *
  * This method raises an exception if passed any other value.
  *
- * @param Value to test.
+ * @param $value Value to test.
  * @return bool True if the parameter is a nonempty, scalar value.
  */
 function phutil_nonempty_scalar($value) {

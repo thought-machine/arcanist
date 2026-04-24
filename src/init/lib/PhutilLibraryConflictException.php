@@ -15,7 +15,7 @@
  * library components on other copies of themselves are expected to fail.)
  *
  * To resolve this, you need to make sure your program loads no more than one
- * copy of each libphutil library, but exactly how you approach this depends on
+ * copy of each Arcanist library, but exactly how you approach this depends on
  * why it's happening in the first place.
  *
  * @task info Getting Exception Information
@@ -30,10 +30,10 @@ final class PhutilLibraryConflictException extends Exception {
   /**
    * Create a new library conflict exception.
    *
-   * @param string The name of the library which conflicts with an existing
-   *               library.
-   * @param string The path of the already-loaded library.
-   * @param string The path of the attempting-to-load library.
+   * @param string $library The name of the library which conflicts with an
+   *               existing library.
+   * @param string $old_path The path of the already-loaded library.
+   * @param string $new_path The path of the attempting-to-load library.
    *
    * @task construct
    */

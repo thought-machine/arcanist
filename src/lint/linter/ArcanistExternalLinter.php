@@ -50,7 +50,7 @@ abstract class ArcanistExternalLinter extends ArcanistFutureLinter {
    * @task bin
    */
   public function getUpgradeInstructions() {
-      return null;
+      return '';
   }
 
   /**
@@ -63,7 +63,7 @@ abstract class ArcanistExternalLinter extends ArcanistFutureLinter {
    * this method and return true so execution continues when it exits with
    * a nonzero status.
    *
-   * @param bool  Return true to continue on nonzero error code.
+   * @return bool  Return true to continue on nonzero error code.
    * @task bin
    */
   public function shouldExpectCommandErrors() {
@@ -78,7 +78,7 @@ abstract class ArcanistExternalLinter extends ArcanistFutureLinter {
    * Flags which are not mandatory should be provided in
    * @{method:getDefaultFlags} instead.
    *
-   * @return list<string>  Mandatory flags, like `"--format=xml"`.
+   * @return array<string> List of mandatory flags, like `"--format=xml"`.
    * @task bin
    */
   protected function getMandatoryFlags() {
@@ -93,7 +93,7 @@ abstract class ArcanistExternalLinter extends ArcanistFutureLinter {
    *
    * Default flags can be overridden with @{method:setFlags}.
    *
-   * @return list<string>  Overridable default flags.
+   * @return array<string> List of overridable default flags.
    * @task bin
    */
   protected function getDefaultFlags() {
@@ -104,8 +104,8 @@ abstract class ArcanistExternalLinter extends ArcanistFutureLinter {
    * Override default flags with custom flags. If not overridden, flags provided
    * by @{method:getDefaultFlags} are used.
    *
-   * @param list<string> New flags.
-   * @return this
+   * @param array<string> $flags List of new flags.
+   * @return $this
    * @task bin
    */
   final public function setFlags(array $flags) {
@@ -116,8 +116,8 @@ abstract class ArcanistExternalLinter extends ArcanistFutureLinter {
   /**
    * Set the binary's version requirement.
    *
-   * @param string Version requirement.
-   * @return this
+   * @param string $version Version requirement.
+   * @return $this
    * @task bin
    */
   final public function setVersionRequirement($version) {
@@ -151,8 +151,8 @@ abstract class ArcanistExternalLinter extends ArcanistFutureLinter {
   /**
    * Override the default binary with a new one.
    *
-   * @param string  New binary.
-   * @return this
+   * @param string $bin New binary.
+   * @return $this
    * @task bin
    */
   final public function setBinary($bin) {
@@ -200,8 +200,8 @@ abstract class ArcanistExternalLinter extends ArcanistFutureLinter {
   /**
    * Set the interpreter, overriding any default.
    *
-   * @param string New interpreter.
-   * @return this
+   * @param string $interpreter New interpreter.
+   * @return $this
    * @task bin
    */
   final public function setInterpreter($interpreter) {
@@ -223,11 +223,11 @@ abstract class ArcanistExternalLinter extends ArcanistFutureLinter {
    * you're able to detect a more specific condition.) Otherwise, return a list
    * of messages.
    *
-   * @param  string   Path to the file being linted.
-   * @param  int      Exit code of the linter.
-   * @param  string   Stdout of the linter.
-   * @param  string   Stderr of the linter.
-   * @return list<ArcanistLintMessage>|false  List of lint messages, or false
+   * @param  string   $path Path to the file being linted.
+   * @param  int      $err Exit code of the linter.
+   * @param  string   $stdout Stdout of the linter.
+   * @param  string   $stderr Stderr of the linter.
+   * @return array<ArcanistLintMessage>|false  List of lint messages, or false
    *                                          to indicate parser failure.
    * @task parse
    */
@@ -298,7 +298,7 @@ abstract class ArcanistExternalLinter extends ArcanistFutureLinter {
    * of the configured binary to the required version, and if the binary's
    * version is not supported, throw an exception.
    *
-   * @param  string   Version string to check.
+   * @param  string   $version Version string to check.
    * @return void
    */
   final protected function checkBinaryVersion($version) {
@@ -315,7 +315,7 @@ abstract class ArcanistExternalLinter extends ArcanistFutureLinter {
          $this->versionRequirement);
 
       $instructions = $this->getUpgradeInstructions();
-      if ($instructions) {
+      if (phutil_nonempty_string($instructions)) {
         $message .= "\n".pht('TO UPGRADE: %s', $instructions);
       }
 
@@ -343,7 +343,7 @@ abstract class ArcanistExternalLinter extends ArcanistFutureLinter {
         $version);
 
       $instructions = $this->getUpgradeInstructions();
-      if ($instructions) {
+      if (phutil_nonempty_string($instructions)) {
         $message .= "\n".pht('TO UPGRADE: %s', $instructions);
       }
 
@@ -382,7 +382,7 @@ abstract class ArcanistExternalLinter extends ArcanistFutureLinter {
    * Get the composed flags for the executable, including both mandatory and
    * configured flags.
    *
-   * @return list<string> Composed flags.
+   * @return array<string> List of composed flags.
    * @task exec
    */
   final protected function getCommandFlags() {
@@ -415,7 +415,7 @@ abstract class ArcanistExternalLinter extends ArcanistFutureLinter {
    *
    * This method is expected to return an already escaped string.
    *
-   * @param string Path to the file being linted
+   * @param string $path Path to the file being linted
    * @return string The command-ready file argument
    */
   protected function getPathArgumentForLinterFuture($path) {
@@ -572,7 +572,7 @@ abstract class ArcanistExternalLinter extends ArcanistFutureLinter {
    *
    * If the code is not recognized, you should throw an exception.
    *
-   * @param string  Code specified in configuration.
+   * @param string   $code Code specified in configuration.
    * @return string  Normalized code to use in severity map.
    */
   protected function getLintCodeFromLinterConfigurationKey($code) {

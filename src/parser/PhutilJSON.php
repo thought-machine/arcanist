@@ -16,7 +16,7 @@ final class PhutilJSON extends Phobject {
    * Encode an object in JSON and pretty-print it. This generates a valid JSON
    * object with human-readable whitespace and indentation.
    *
-   * @param   dict    An object to encode in JSON.
+   * @param   array   $object An object to encode in JSON.
    * @return  string  Pretty-printed object representation.
    */
   public function encodeFormatted($object) {
@@ -27,7 +27,7 @@ final class PhutilJSON extends Phobject {
   /**
    * Encode a list in JSON and pretty-print it, discarding keys.
    *
-   * @param list<wild> List to encode in JSON.
+   * @param array<mixed> $list List to encode in JSON.
    * @return string Pretty-printed list representation.
    */
   public function encodeAsList(array $list) {
@@ -41,8 +41,8 @@ final class PhutilJSON extends Phobject {
   /**
    * Pretty-print a JSON object.
    *
-   * @param   dict    Object to format.
-   * @param   int     Current depth, for indentation.
+   * @param   array   $object Object to format.
+   * @param   int     $depth Current depth, for indentation.
    * @return  string  Pretty-printed value.
    * @task internal
    */
@@ -51,7 +51,7 @@ final class PhutilJSON extends Phobject {
       $object = (array)$object;
     }
 
-    if (empty($object)) {
+    if (empty($object) || !is_iterable($object)) {
       return '{}';
     }
 
@@ -84,8 +84,8 @@ final class PhutilJSON extends Phobject {
   /**
    * Pretty-print a JSON list.
    *
-   * @param   list    List to format.
-   * @param   int     Current depth, for indentation.
+   * @param   array   $array List to format.
+   * @param   int     $depth Current depth, for indentation.
    * @return  string  Pretty-printed value.
    * @task internal
    */
@@ -115,8 +115,8 @@ final class PhutilJSON extends Phobject {
   /**
    * Pretty-print a JSON value.
    *
-   * @param   dict    Value to format.
-   * @param   int     Current depth, for indentation.
+   * @param   array   $value Value to format.
+   * @param   int     $depth Current depth, for indentation.
    * @return  string  Pretty-printed value.
    * @task internal
    */
@@ -131,7 +131,8 @@ final class PhutilJSON extends Phobject {
       return $this->encodeFormattedObject($value, $depth);
     } else {
       if (defined('JSON_UNESCAPED_SLASHES')) {
-        // If we have a new enough version of PHP, disable escaping of slashes
+        // If we have PHP >= 5.4.0 && the JSON extension is installed (as of
+        // PHP 8.0.0, it is a core PHP extension), disable escaping of slashes
         // when pretty-printing values. Escaping slashes can defuse an attack
         // where the attacker embeds "</script>" inside a JSON string, but that
         // isn't relevant when rendering JSON for human viewers.
@@ -146,7 +147,7 @@ final class PhutilJSON extends Phobject {
   /**
    * Render a string corresponding to the current indent depth.
    *
-   * @param   int     Current depth.
+   * @param   int     $depth Current depth.
    * @return  string  Indentation.
    * @task internal
    */

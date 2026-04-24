@@ -60,9 +60,10 @@ abstract class PhutilExecutableFuture extends Future {
    *   // Env will have ONLY "X".
    *   $exec->setEnv(array('X' => 'y'), $wipe_process_env = true);
    *
-   * @param map<string, string> Dictionary of environmental variables.
-   * @param bool Optionally, pass `true` to replace the existing environment.
-   * @return this
+   * @param array<string, string> $env Dictionary of environmental variables.
+   * @param bool $wipe_process_env (optional) Pass `true` to replace the
+   *   existing environment.
+   * @return $this
    *
    * @task config
    */
@@ -86,9 +87,9 @@ abstract class PhutilExecutableFuture extends Future {
   /**
    * Set the value of a specific environmental variable for this command.
    *
-   * @param string Environmental variable name.
-   * @param string|null New value, or null to remove this variable.
-   * @return this
+   * @param string $key Environmental variable name.
+   * @param string|null $value New value, or null to remove this variable.
+   * @return $this
    * @task config
    */
   final public function updateEnv($key, $value) {
@@ -120,7 +121,7 @@ abstract class PhutilExecutableFuture extends Future {
   /**
    * Get the configured environment.
    *
-   * @return map<string, string> Effective environment for this command.
+   * @return array<string, string> Effective environment for this command.
    * @task config
    */
   final public function getEnv() {
@@ -142,7 +143,7 @@ abstract class PhutilExecutableFuture extends Future {
 
       foreach ($known_keys as $known_key) {
         $value = getenv($known_key);
-        if (strlen($value)) {
+        if ($value && $value !== '') {
           $default_env[$known_key] = $value;
         }
       }
@@ -159,8 +160,8 @@ abstract class PhutilExecutableFuture extends Future {
    * the subprocess will execute). If not set, the default value is the parent's
    * current working directory.
    *
-   * @param string Directory to execute the subprocess in.
-   * @return this
+   * @param string $cwd Directory to execute the subprocess in.
+   * @return $this
    * @task config
    */
   final public function setCWD($cwd) {
@@ -169,10 +170,11 @@ abstract class PhutilExecutableFuture extends Future {
     try {
       Filesystem::assertExists($cwd);
     } catch (FilesystemException $ex) {
-      throw new PhutilProxyException(
+      throw new Exception(
         pht(
           'Unable to run a command in directory "%s".',
           $cwd),
+        0,
         $ex);
     }
 

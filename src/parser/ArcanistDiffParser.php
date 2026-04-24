@@ -40,8 +40,11 @@ final class ArcanistDiffParser extends Phobject {
     return $this;
   }
 
+  /**
+   * @param array<ArcanistDiffChange> $changes
+   */
   public function setChanges(array $changes) {
-    assert_instances_of($changes, 'ArcanistDiffChange');
+    assert_instances_of($changes, ArcanistDiffChange::class);
     $this->changes = mpull($changes, null, 'getCurrentPath');
     return $this;
   }
@@ -187,6 +190,11 @@ final class ArcanistDiffParser extends Phobject {
   }
 
   public function parseDiff($diff) {
+    // Remove leading UTF-8 Byte Order Mark (BOM)
+    if (substr($diff, 0, 3) == pack('CCC', 0xEF, 0xBB, 0xBF)) {
+      $diff = substr($diff, 3);
+    }
+
     if (!strlen(trim($diff))) {
       throw new Exception(pht("Can't parse an empty diff!"));
     }
@@ -1324,8 +1332,8 @@ final class ArcanistDiffParser extends Phobject {
    * return an incorrect value.  Such cases are expected to be
    * recovered by later rename detection codepaths.
    *
-   * @param string Text from a diff line after "diff --git ".
-   * @return string Filename being altered, or null for a rename.
+   * @param string $paths Text from a diff line after "diff --git ".
+   * @return string|null Filename being altered, or null for a rename.
    */
   public static function extractGitCommonFilename($paths) {
     $matches = null;

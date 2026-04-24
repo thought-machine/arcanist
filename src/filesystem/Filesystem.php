@@ -12,6 +12,7 @@
  * @task directory   Directories
  * @task file        Files
  * @task path        Paths
+ * @task phar        PHAR files
  * @task exec        Executables
  * @task assert      Assertions
  */
@@ -25,8 +26,8 @@ final class Filesystem extends Phobject {
    * Read a file in a manner similar to file_get_contents(), but throw detailed
    * exceptions on failure.
    *
-   * @param  string  File path to read. This file must exist and be readable,
-   *                 or an exception will be thrown.
+   * @param  string  $path File path to read. This file must exist and be
+   *                 readable, or an exception will be thrown.
    * @return string  Contents of the specified file.
    *
    * @task   file
@@ -79,9 +80,9 @@ final class Filesystem extends Phobject {
    * detailed exceptions on failure. If the file already exists, it will be
    * overwritten.
    *
-   * @param  string  File path to write. This file must be writable and its
-   *                 parent directory must exist.
-   * @param  string  Data to write.
+   * @param  string  $path File path to write. This file must be writable and
+   *                 its parent directory must exist.
+   * @param  string  $data Data to write.
    *
    * @task   file
    */
@@ -106,8 +107,8 @@ final class Filesystem extends Phobject {
    * file without needing locking; any given read of the file is guaranteed to
    * be self-consistent and not see partial file contents.
    *
-   * @param string file path to write
-   * @param string data to write
+   * @param string $path file path to write
+   * @param string $data data to write
    *
    * @return boolean indicating whether the file was changed by this function.
    */
@@ -141,7 +142,7 @@ final class Filesystem extends Phobject {
           $path,
           pht('Unable to move %s to %s.', $temp, $path));
       }
-    } catch (Exception $e) {
+    } catch (Throwable $e) {
       // Make best effort to remove temp file
       unlink($temp);
       throw $e;
@@ -159,10 +160,10 @@ final class Filesystem extends Phobject {
    * exists, e.g. "example.bak", "example.bak.1", "example.bak.2", etc. (Don't
    * rely on this exact behavior, of course.)
    *
-   * @param   string  Suggested filename, like "example.bak". This name will
-   *                  be used if it does not exist, or some similar name will
-   *                  be chosen if it does.
-   * @param   string  Data to write to the file.
+   * @param   string  $base Suggested filename, like "example.bak". This name
+   *                  will be used if it does not exist, or some similar name
+   *                  will be chosen if it does.
+   * @param   string  $data Data to write to the file.
    * @return  string  Path to a newly created and written file which did not
    *                  previously exist, like "example.bak.3".
    * @task file
@@ -207,9 +208,9 @@ final class Filesystem extends Phobject {
    * Append to a file without having to deal with file handles, with
    * detailed exceptions on failure.
    *
-   * @param  string  File path to write. This file must be writable or its
-   *                 parent directory must exist and be writable.
-   * @param  string  Data to write.
+   * @param  string  $path File path to write. This file must be writable or
+   *                 its parent directory must exist and be writable.
+   * @param  string  $data Data to write.
    *
    * @task   file
    */
@@ -253,9 +254,9 @@ final class Filesystem extends Phobject {
   /**
    * Copy a file, preserving file attributes (if relevant for the OS).
    *
-   * @param string  File path to copy from.  This file must exist and be
+   * @param string  $from File path to copy from.  This file must exist and be
    *                readable, or an exception will be thrown.
-   * @param string  File path to copy to.  If a file exists at this path
+   * @param string  $to File path to copy to.  If a file exists at this path
    *                already, it wll be overwritten.
    *
    * @task  file
@@ -275,7 +276,7 @@ final class Filesystem extends Phobject {
       $trap->destroy();
 
       if (!$ok) {
-        if (strlen($err)) {
+        if ($err !== null && strlen($err)) {
           throw new FilesystemException(
             $to,
             pht(
@@ -301,13 +302,13 @@ final class Filesystem extends Phobject {
   /**
    * Remove a file or directory.
    *
-   * @param  string    File to a path or directory to remove.
+   * @param  string $path File to a path or directory to remove.
    * @return void
    *
    * @task   file
    */
   public static function remove($path) {
-    if (!strlen($path)) {
+    if ($path == null || !strlen($path)) {
       // Avoid removing PWD.
       throw new Exception(
         pht(
@@ -327,8 +328,8 @@ final class Filesystem extends Phobject {
   /**
    * Rename a file or directory.
    *
-   * @param string    Old path.
-   * @param string    New path.
+   * @param string $old Old path.
+   * @param string $new New path.
    *
    * @task file
    */
@@ -351,7 +352,7 @@ final class Filesystem extends Phobject {
    * Internal. Recursively remove a file or an entire directory. Implements
    * the core function of @{method:remove} in a way that works on Windows.
    *
-   * @param  string    File to a path or directory to remove.
+   * @param  string $path File to a path or directory to remove.
    * @return void
    *
    * @task file
@@ -381,9 +382,9 @@ final class Filesystem extends Phobject {
   /**
    * Change the permissions of a file or directory.
    *
-   * @param  string    Path to the file or directory.
-   * @param  int       Permission umask. Note that umask is in octal, so you
-   *                   should specify it as, e.g., `0777', not `777'.
+   * @param  string $path  Path to the file or directory.
+   * @param  int    $umask Permission umask. Note that umask is in octal, so
+   *                   you should specify it as, e.g., `0777', not `777'.
    * @return void
    *
    * @task   file
@@ -405,7 +406,7 @@ final class Filesystem extends Phobject {
   /**
    * Get the last modified time of a file
    *
-   * @param string Path to file
+   * @param string $path Path to file
    * @return int Time last modified
    *
    * @task file
@@ -432,7 +433,7 @@ final class Filesystem extends Phobject {
    * Read random bytes from /dev/urandom or equivalent. See also
    * @{method:readRandomCharacters}.
    *
-   * @param   int     Number of bytes to read.
+   * @param   int     $number_of_bytes Number of bytes to read.
    * @return  string  Random bytestring of the provided length.
    *
    * @task file
@@ -443,84 +444,8 @@ final class Filesystem extends Phobject {
       throw new Exception(pht('You must generate at least 1 byte of entropy.'));
     }
 
-    // Under PHP 7.2.0 and newer, we have a reasonable builtin. For older
-    // versions, we fall back to various sources which have a roughly similar
-    // effect.
-    if (function_exists('random_bytes')) {
-      return random_bytes($number_of_bytes);
-    }
-
-    // Try to use `openssl_random_pseudo_bytes()` if it's available. This source
-    // is the most widely available source, and works on Windows/Linux/OSX/etc.
-
-    if (function_exists('openssl_random_pseudo_bytes')) {
-      $strong = true;
-      $data = openssl_random_pseudo_bytes($number_of_bytes, $strong);
-
-      if (!$strong) {
-        // NOTE: This indicates we're using a weak random source. This is
-        // probably OK, but maybe we should be more strict here.
-      }
-
-      if ($data === false) {
-        throw new Exception(
-          pht(
-            '%s failed to generate entropy!',
-            'openssl_random_pseudo_bytes()'));
-      }
-
-      if (strlen($data) != $number_of_bytes) {
-        throw new Exception(
-          pht(
-            '%s returned an unexpected number of bytes (got %s, expected %s)!',
-            'openssl_random_pseudo_bytes()',
-            new PhutilNumber(strlen($data)),
-            new PhutilNumber($number_of_bytes)));
-      }
-
-      return $data;
-    }
-
-
-    // Try to use `/dev/urandom` if it's available. This is usually available
-    // on non-Windows systems, but some PHP config (open_basedir) and chrooting
-    // may limit our access to it.
-
-    $urandom = @fopen('/dev/urandom', 'rb');
-    if ($urandom) {
-      $data = @fread($urandom, $number_of_bytes);
-      @fclose($urandom);
-      if (strlen($data) != $number_of_bytes) {
-        throw new FilesystemException(
-          '/dev/urandom',
-          pht('Failed to read random bytes!'));
-      }
-      return $data;
-    }
-
-    // (We might be able to try to generate entropy here from a weaker source
-    // if neither of the above sources panned out, see some discussion in
-    // T4153.)
-
-    // We've failed to find any valid entropy source. Try to fail in the most
-    // useful way we can, based on the platform.
-
-    if (phutil_is_windows()) {
-      throw new Exception(
-        pht(
-          '%s requires the PHP OpenSSL extension to be installed and enabled '.
-          'to access an entropy source. On Windows, this extension is usually '.
-          'installed but not enabled by default. Enable it in your "php.ini".',
-          __METHOD__.'()'));
-    }
-
-    throw new Exception(
-      pht(
-        '%s requires the PHP OpenSSL extension or access to "%s". Install or '.
-        'enable the OpenSSL extension, or make sure "%s" is accessible.',
-        __METHOD__.'()',
-        '/dev/urandom',
-        '/dev/urandom'));
+    // Since PHP 7.2.0, we have a reasonable builtin:
+    return random_bytes($number_of_bytes);
   }
 
 
@@ -530,7 +455,7 @@ final class Filesystem extends Phobject {
    * output (a-z, 0-9) so it's appropriate for use in URIs and other contexts
    * where it needs to be human readable.
    *
-   * @param   int     Number of characters to read.
+   * @param   int     $number_of_characters Number of characters to read.
    * @return  string  Random character string of the provided length.
    *
    * @task file
@@ -563,8 +488,8 @@ final class Filesystem extends Phobject {
    *
    * This method uses less-entropic random sources under older versions of PHP.
    *
-   * @param int Minimum value, inclusive.
-   * @param int Maximum value, inclusive.
+   * @param int $min Minimum value, inclusive.
+   * @param int $max Maximum value, inclusive.
    */
   public static function readRandomInteger($min, $max) {
     if (!is_int($min)) {
@@ -612,9 +537,9 @@ final class Filesystem extends Phobject {
    * Identify the MIME type of a file. This returns only the MIME type (like
    * text/plain), not the encoding (like charset=utf-8).
    *
-   * @param string Path to the file to examine.
-   * @param string Optional default mime type to return if the file's mime
-   *               type can not be identified.
+   * @param string $path Path to the file to examine.
+   * @param string $default (optional) default mime type to return if the
+   *               file's mime type can not be identified.
    * @return string File mime type.
    *
    * @task file
@@ -673,7 +598,7 @@ final class Filesystem extends Phobject {
     }
 
     // If we come back with an encoding, strip it off.
-    if (strpos($mime_type, ';') !== false) {
+    if ($mime_type !== null && strpos($mime_type, ';') !== false) {
       list($type, $encoding) = explode(';', $mime_type, 2);
       $mime_type = $type;
     }
@@ -693,11 +618,12 @@ final class Filesystem extends Phobject {
    * Create a directory in a manner similar to mkdir(), but throw detailed
    * exceptions on failure.
    *
-   * @param  string    Path to directory. The parent directory must exist and
-   *                   be writable.
-   * @param  int       Permission umask. Note that umask is in octal, so you
-   *                   should specify it as, e.g., `0777', not `777'.
-   * @param  boolean   Recursively create directories. Default to false.
+   * @param  string    $path Path to directory. The parent directory must exist
+   *                   and be writable.
+   * @param  int       $umask Permission umask. Note that umask is in octal, so
+   *                   you should specify it as, e.g., `0777', not `777'.
+   * @param  boolean   $recursive (optional) Recursively create directories.
+   *                   Defaults to false.
    * @return string    Path to the created directory.
    *
    * @task   directory
@@ -752,11 +678,13 @@ final class Filesystem extends Phobject {
    * responsible for removing it (e.g., with Filesystem::remove())
    * when you are done with it.
    *
-   * @param  string    Optional directory prefix.
-   * @param  int       Permissions to create the directory with. By default,
-   *                   these permissions are very restrictive (0700).
-   * @param  string    Optional root directory. If not provided, the system
-   *                   temporary directory (often "/tmp") will be used.
+   * @param  string    $prefix (optional) directory prefix.
+   * @param  int       $umask (optional) Permissions to create the directory
+   *                   with. By default, these permissions are very restrictive
+   *                   (0700).
+   * @param  string    $root_directory (optional) Root directory. If not
+   *                   provided, the system temporary directory (often "/tmp")
+   *                   will be used.
    * @return string    Path to newly created temporary directory.
    *
    * @task   directory
@@ -785,7 +713,7 @@ final class Filesystem extends Phobject {
 
     $tries = 3;
     do {
-      $dir = $base.substr(base_convert(md5(mt_rand()), 16, 36), 0, 16);
+      $dir = $base.substr(base_convert(md5((string)mt_rand()), 16, 36), 0, 16);
       try {
         self::createDirectory($dir, $umask);
         break;
@@ -814,8 +742,9 @@ final class Filesystem extends Phobject {
   /**
    * List files in a directory.
    *
-   * @param  string    Path, absolute or relative to PWD.
-   * @param  bool      If false, exclude files beginning with a ".".
+   * @param  string    $path Path, absolute or relative to PWD.
+   * @param  bool      $include_hidden If false, exclude files beginning with
+   *                   a ".".
    *
    * @return array     List of files and directories in the specified
    *                   directory, excluding `.' and `..'.
@@ -850,9 +779,9 @@ final class Filesystem extends Phobject {
    * Return all directories between a path and the specified root directory
    * (defaulting to "/"). Iterating over them walks from the path to the root.
    *
-   * @param  string        Path, absolute or relative to PWD.
-   * @param  string        The root directory.
-   * @return list<string>  List of parent paths, including the provided path.
+   * @param  string        $path Path, absolute or relative to PWD.
+   * @param  string        $root (optional) The root directory.
+   * @return array<string> List of parent paths, including the provided path.
    * @task   directory
    */
   public static function walkToRoot($path, $root = null) {
@@ -924,10 +853,15 @@ final class Filesystem extends Phobject {
   /**
    * Checks if a path is specified as an absolute path.
    *
-   * @param  string
+   * @param  string $path
    * @return bool
    */
   public static function isAbsolutePath($path) {
+    if (self::isPharPath($path)) {
+      list($archive_path) = self::parsePharUri($path);
+      return self::isAbsolutePath($archive_path);
+    }
+
     if (phutil_is_windows()) {
       return (bool)preg_match('/^[A-Za-z]+:/', $path);
     } else {
@@ -936,16 +870,163 @@ final class Filesystem extends Phobject {
   }
 
   /**
+   * @return bool
+   *
+   * @task phar
+   */
+  public static function isPharPath($path) {
+    if ($path == null) {
+      return false;
+    }
+    return !strncmp($path, 'phar://', 7);
+  }
+
+  /**
+   *
+   * @task phar
+   */
+  private static function parsePharUri($path) {
+    static $valid_extensions = null;
+    if ($valid_extensions === null) {
+      $valid_extensions = array(
+        '.phar',
+        '.phar.tar',
+        '.phar.zip',
+      );
+    }
+
+    if (!self::isPharPath($path) || strlen($path) <= 7) {
+      throw new FilesystemException(
+        $path,
+        pht(
+          'Unable to parse path as PHAR file. PHAR file paths must be '.
+          'prefixed with `%s` and include a segment with one of these '.
+          'extensions (case-sensitive): %s',
+          'phar://',
+          implode(', ', $valid_extensions)));
+    }
+
+    $parts = self::splitPath(substr($path, 7));
+
+    $archive_name = array();
+
+    if ($path[7] === DIRECTORY_SEPARATOR) {
+      $archive_name[] = '';
+    }
+
+    $found = false;
+    while ($parts && !$found) {
+      $part = array_shift($parts);
+      $archive_name[] = $part;
+      foreach ($valid_extensions as $extension) {
+        // str_ends_with only exists in 8.0, but we already refuse to consider
+        // phar files on anything earlier than that.
+        if (str_ends_with($part, $extension)) {
+          $inner = $parts;
+          $found = true;
+          break;
+        }
+      }
+    }
+
+    if (!$found) {
+      throw new FilesystemException(
+        $path,
+        pht(
+          'Unable to parse path as PHAR file. PHAR file paths must include a '.
+          'segment with one of these extensions (case-sensitive): %s',
+          implode(', ', $valid_extensions)));
+    }
+
+    $archive_name = implode(DIRECTORY_SEPARATOR, $archive_name);
+    // the inner-path always starts relative to the archive
+    $inner = DIRECTORY_SEPARATOR.implode(DIRECTORY_SEPARATOR, $inner);
+
+    return array(
+      $archive_name,
+      $inner,
+    );
+  }
+
+  /**
+   * @task phar
+   */
+  private static function guardPharFiles($path) {
+    static $php_version_good = null;
+    if ($php_version_good === null) {
+      $min_version = '8.0';
+      $cur_version = phpversion();
+      if (version_compare($cur_version, $min_version, '<')) {
+        $php_version_good = false;
+      } else {
+        $php_version_good = true;
+      }
+    }
+    if ($php_version_good) {
+      return;
+    }
+    if ($path === null) {
+      return;
+    }
+
+    if (self::isPharPath($path)) {
+      throw new FilesystemException(
+        $path,
+        pht(
+          'PHP versions older then %s have known security vulnerabilities '.
+          'when considering PHAR files; Refusing to inspect file %s. See %s',
+          $min_version,
+          $path,
+          'https://wiki.php.net/rfc/phar_stop_autoloading_metadata'));
+    }
+  }
+
+  /**
    * Canonicalize a path by resolving it relative to some directory (by
    * default PWD), following parent symlinks and removing artifacts. If the
    * path is itself a symlink it is left unresolved.
    *
-   * @param  string    Path, absolute or relative to PWD.
-   * @return string    Canonical, absolute path.
+   * If the path is inside a PHAR file, canonicalize the path to the PHAR file
+   * and the internal part separately.
+   *
+   * @param  string    $path Path, absolute or relative to PWD.
+   * @return string    $relative_to (optional) Canonical, absolute path.
    *
    * @task   path
    */
   public static function resolvePath($path, $relative_to = null) {
+    self::guardPharFiles($path);
+    self::guardPharFiles($relative_to);
+
+    $path_is_phar = self::isPharPath($path);
+    $relative_is_phar = self::isPharPath($relative_to);
+
+    if ($path_is_phar && $relative_is_phar) {
+      throw new FilesystemException(
+        $path,
+        pht(
+          "Can't resolve a PHAR path relative to another PHAR path. ".
+          'Trying to resolve path `%s` relative to `%s` .',
+          $path,
+          $relative_to));
+    }
+
+    if ($path_is_phar) {
+      list($archive_path, $inner_path) = self::parsePharUri($path);
+      $archive_path = self::resolvePath($archive_path, $relative_to);
+      $inner_path = self::normalizeVirtualPath($inner_path);
+      return 'phar://'.$archive_path.DIRECTORY_SEPARATOR.$inner_path;
+    }
+
+    if ($relative_is_phar) {
+      list($archive_path, $inner_path) = self::parsePharUri($relative_to);
+      $archive_path = self::resolvePath($archive_path);
+      $inner_path = self::normalizeVirtualPath(
+        $inner_path.DIRECTORY_SEPARATOR.$path);
+      return 'phar://'.$archive_path.DIRECTORY_SEPARATOR.$inner_path;
+    }
+
+
     $is_absolute = self::isAbsolutePath($path);
 
     if (!$is_absolute) {
@@ -972,19 +1053,12 @@ final class Filesystem extends Phobject {
     // or something crazy like that. Try to resolve a parent so we at least
     // cover the nonexistent file case.
 
-    // We're also normalizing path separators to whatever is normal for the
-    // environment.
+    $parts = self::splitPath($path);
 
+    // Normalize the directory separators in the path. If we find a
+    // parent below, we'll overwrite this with a better resolved path.
     if (phutil_is_windows()) {
-      $parts = trim($path, '/\\');
-      $parts = preg_split('([/\\\\])', $parts);
-
-      // Normalize the directory separators in the path. If we find a parent
-      // below, we'll overwrite this with a better resolved path.
       $path = str_replace('/', '\\', $path);
-    } else {
-      $parts = trim($path, '/');
-      $parts = explode('/', $parts);
     }
 
     while ($parts) {
@@ -1005,12 +1079,67 @@ final class Filesystem extends Phobject {
   }
 
   /**
+   * Split a path to its parts along the directory-separator, and normalize it.
+   *
+   * @return string[]
+   */
+  private static function splitPath($path) {
+    if (phutil_is_windows()) {
+      $parts = trim($path, '/\\');
+      $parts = preg_split('([/\\\\])', $parts);
+      return $parts;
+    }
+
+    $parts = trim($path, '/');
+    $parts = explode('/', $parts);
+    return $parts;
+  }
+
+  /**
+   * Remove all references to `/./`, `/../`, etcetera for a path that doesn't
+   * exist.
+   * Doesn't resolve any symlinks.
+   *
+   * Throws an exception if the resolved path goes higher then root.
+   *
+   * @return string
+   */
+  private static function normalizeVirtualPath($path) {
+    // realpath doesn't work on missing/virtual paths, but we still need to
+    // prevent some paths such as '/../../../etc/hosts'.
+
+    $parts = self::splitPath($path);
+    $built = array();
+
+    foreach ($parts as $part) {
+      switch ($part) {
+        case '':
+        case '.':
+          break;
+        case '..':
+          if (count($built) <= 0) {
+            throw new FilesystemException(
+              $path,
+              pht('Trying to resolve a path that goes higher then root'));
+          }
+          array_pop($built);
+          break;
+        default:
+          $built[] = $part;
+          break;
+      }
+    }
+
+    return implode(DIRECTORY_SEPARATOR, $built);
+  }
+
+  /**
    * Test whether a path is descendant from some root path after resolving all
    * symlinks and removing artifacts. Both paths must exists for the relation
    * to obtain. A path is always a descendant of itself as long as it exists.
    *
-   * @param  string   Child path, absolute or relative to PWD.
-   * @param  string   Root path, absolute or relative to PWD.
+   * @param  string   $path Child path, absolute or relative to PWD.
+   * @param  string   $root Root path, absolute or relative to PWD.
    * @return bool     True if resolved child path is in fact a descendant of
    *                  resolved root path and both exist.
    * @task   path
@@ -1031,8 +1160,8 @@ final class Filesystem extends Phobject {
    * guaranteed that you can use resolvePath() to restore a path to its
    * canonical format.
    *
-   * @param  string    Path, absolute or relative to PWD.
-   * @param  string    Optionally, working directory to make files readable
+   * @param  string    $path Path, absolute or relative to PWD.
+   * @param  string    $pwd (optional) Working directory to make files readable
    *                   relative to.
    * @return string    Human-readable path.
    *
@@ -1060,7 +1189,7 @@ final class Filesystem extends Phobject {
    * file_exists() in that it returns true for symlinks. This method does not
    * attempt to resolve paths before testing them.
    *
-   * @param   string  Test for the existence of this path.
+   * @param   string  $path Test for the existence of this path.
    * @return  bool    True if the path exists in the filesystem.
    * @task    path
    */
@@ -1073,7 +1202,7 @@ final class Filesystem extends Phobject {
    * Determine if an executable binary (like `git` or `svn`) exists within
    * the configured `$PATH`.
    *
-   * @param   string  Binary name, like `'git'` or `'svn'`.
+   * @param   string  $binary Binary name, like `'git'` or `'svn'`.
    * @return  bool    True if the binary exists and is executable.
    * @task    exec
    */
@@ -1086,8 +1215,8 @@ final class Filesystem extends Phobject {
    * Locates the full path that an executable binary (like `git` or `svn`) is at
    * the configured `$PATH`.
    *
-   * @param   string  Binary name, like `'git'` or `'svn'`.
-   * @return  string  The full binary path if it is present, or null.
+   * @param   string  $binary Binary name, like `'git'` or `'svn'`.
+   * @return  string|null  The full binary path if it is present, or null.
    * @task    exec
    */
   public static function resolveBinary($binary) {
@@ -1129,8 +1258,8 @@ final class Filesystem extends Phobject {
    * resolvePath() only resolves symlinks in parent directories, not the
    * path itself.
    *
-   * @param string First path to test for equivalence.
-   * @param string Second path to test for equivalence.
+   * @param string $u First path to test for equivalence.
+   * @param string $v Second path to test for equivalence.
    * @return bool  True if both paths are equivalent, i.e. reference the same
    *               entity in the filesystem.
    * @task path
@@ -1171,7 +1300,7 @@ final class Filesystem extends Phobject {
    * Assert that something (e.g., a file, directory, or symlink) exists at a
    * specified location.
    *
-   * @param  string    Assert that this path exists.
+   * @param  string $path Assert that this path exists.
    * @return void
    *
    * @task   assert
@@ -1223,7 +1352,7 @@ final class Filesystem extends Phobject {
   /**
    * Assert that nothing exists at a specified location.
    *
-   * @param  string    Assert that this path does not exist.
+   * @param  string $path Assert that this path does not exist.
    * @return void
    *
    * @task   assert
@@ -1240,7 +1369,7 @@ final class Filesystem extends Phobject {
   /**
    * Assert that a path represents a file, strictly (i.e., not a directory).
    *
-   * @param  string    Assert that this path is a file.
+   * @param  string $path Assert that this path is a file.
    * @return void
    *
    * @task   assert
@@ -1257,7 +1386,7 @@ final class Filesystem extends Phobject {
   /**
    * Assert that a path represents a directory, strictly (i.e., not a file).
    *
-   * @param  string    Assert that this path is a directory.
+   * @param  string $path Assert that this path is a directory.
    * @return void
    *
    * @task   assert
@@ -1274,7 +1403,7 @@ final class Filesystem extends Phobject {
   /**
    * Assert that a file or directory exists and is writable.
    *
-   * @param  string    Assert that this path is writable.
+   * @param  string $path Assert that this path is writable.
    * @return void
    *
    * @task   assert
@@ -1291,7 +1420,7 @@ final class Filesystem extends Phobject {
   /**
    * Assert that a file or directory exists and is readable.
    *
-   * @param  string    Assert that this path is readable.
+   * @param  string $path Assert that this path is readable.
    * @return void
    *
    * @task   assert

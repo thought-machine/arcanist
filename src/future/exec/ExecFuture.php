@@ -8,7 +8,7 @@
  * explanation of futures. When an ExecFuture resolves, it returns the exit
  * code, stdout and stderr of the process it executed.
  *
- * ExecFuture is the core command execution implementation in libphutil, but is
+ * ExecFuture is the core command execution implementation in Arcanist, but is
  * exposed through a number of APIs. See @{article:Command Execution} for more
  * discussion about executing system commands.
  *
@@ -38,7 +38,6 @@ final class ExecFuture extends PhutilExecutableFuture {
   private $stdoutSizeLimit = PHP_INT_MAX;
   private $stderrSizeLimit = PHP_INT_MAX;
 
-  private $profilerCallID;
   private $killedByTimeout;
 
   private $windowsStdoutTempFile = null;
@@ -119,8 +118,8 @@ final class ExecFuture extends PhutilExecutableFuture {
    *
    * NOTE: Setting this to 0 means "no buffer", not "unlimited buffer".
    *
-   * @param int Maximum size of the stdout read buffer.
-   * @return this
+   * @param int $limit Maximum size of the stdout read buffer.
+   * @return $this
    * @task config
    */
   public function setStdoutSizeLimit($limit) {
@@ -133,8 +132,8 @@ final class ExecFuture extends PhutilExecutableFuture {
    * Set a maximum size for the stderr read buffer.
    * See @{method:setStdoutSizeLimit} for discussion.
    *
-   * @param int Maximum size of the stderr read buffer.
-   * @return this
+   * @param int $limit Maximum size of the stderr read buffer.
+   * @return $this
    * @task config
    */
   public function setStderrSizeLimit($limit) {
@@ -153,8 +152,9 @@ final class ExecFuture extends PhutilExecutableFuture {
    * TODO: We should probably release the read buffer limit during
    * @{method:resolve}, or otherwise detect this. For now, be careful.
    *
-   * @param int|null Maximum buffer size, or `null` for unlimited.
-   * @return this
+   * @param int|null $read_buffer_size Maximum buffer size, or `null` for
+   *   unlimited.
+   * @return $this
    */
   public function setReadBufferSize($read_buffer_size) {
     $this->readBufferSize = $read_buffer_size;
@@ -187,8 +187,8 @@ final class ExecFuture extends PhutilExecutableFuture {
    * NOTE: If you call @{method:discardBuffers}, all the stdout/stderr data
    * will be thrown away and the cursors will be reset.
    *
-   * @return pair <$stdout, $stderr> pair with new output since the last call
-   *              to this method.
+   * @return array A pair of <$stdout, $stderr> with new output since the last
+   *               call to this method.
    * @task interact
    */
   public function read() {
@@ -233,13 +233,13 @@ final class ExecFuture extends PhutilExecutableFuture {
   /**
    * Write data to stdin of the command.
    *
-   * @param string Data to write.
-   * @param bool If true, keep the pipe open for writing. By default, the pipe
-   *             will be closed as soon as possible so that commands which
-   *             listen for EOF will execute. If you want to keep the pipe open
-   *             past the start of command execution, do an empty write with
-   *             `$keep_pipe = true` first.
-   * @return this
+   * @param string $data Data to write.
+   * @param bool $keep_pipe (optional) If true, keep the pipe open for writing.
+   *             By default, the pipe will be closed as soon as possible so
+   *             that commands which listen for EOF will execute. If you want
+   *             to keep the pipe open past the start of command execution, do
+   *             an empty write with `$keep_pipe = true` first.
+   * @return $this
    * @task interact
    */
   public function write($data, $keep_pipe = false) {
@@ -267,7 +267,7 @@ final class ExecFuture extends PhutilExecutableFuture {
    * future resolves. This is almost certainly only useful if you need the
    * buffer memory for some reason.
    *
-   * @return this
+   * @return $this
    * @task interact
    */
   public function discardBuffers() {
@@ -308,9 +308,9 @@ final class ExecFuture extends PhutilExecutableFuture {
    * The subprocess will be sent a `TERM` signal, and then a `KILL` signal a
    * short while later if it fails to exit.
    *
-   * @param int Maximum number of seconds this command may execute for before
-   *  it is signaled.
-   * @return this
+   * @param int $seconds Maximum number of seconds this command may execute for
+   *  before it is signaled.
+   * @return $this
    * @task config
    */
   public function setTimeout($seconds) {
@@ -330,9 +330,7 @@ final class ExecFuture extends PhutilExecutableFuture {
    *
    *   list($stdout, $stderr) = $future->resolvex();
    *
-   * @param  float Optional timeout after which resolution will pause and
-   *               execution will return to the caller.
-   * @return pair  <$stdout, $stderr> pair.
+   * @return array A pair of <$stdout, $stderr>.
    * @task resolve
    */
   public function resolvex() {
@@ -345,8 +343,6 @@ final class ExecFuture extends PhutilExecutableFuture {
    * @{method:resolvex}, but also throws if stderr is nonempty, or stdout is not
    * valid JSON. Returns a PHP array, decoded from the JSON command output.
    *
-   * @param  float Optional timeout after which resolution will pause and
-   *               execution will return to the caller.
    * @return array PHP array, decoded from JSON command output.
    * @task resolve
    */
@@ -383,7 +379,7 @@ final class ExecFuture extends PhutilExecutableFuture {
   /**
    * Resolve the process by abruptly terminating it.
    *
-   * @return list List of <err, stdout, stderr> results.
+   * @return array List of <err, stdout, stderr> results.
    * @task resolve
    */
   public function resolveKill() {
@@ -417,6 +413,9 @@ final class ExecFuture extends PhutilExecutableFuture {
     $this->setResult($result);
   }
 
+  /**
+   * @return array A pair of <$stdout, $stderr>.
+   */
   private function raiseResultError($result) {
     list($err, $stdout, $stderr) = $result;
 
@@ -451,7 +450,7 @@ final class ExecFuture extends PhutilExecutableFuture {
   /**
    * Provides read sockets to the future core.
    *
-   * @return list List of read sockets.
+   * @return array List of read sockets.
    * @task internal
    */
   public function getReadSockets() {
@@ -470,7 +469,7 @@ final class ExecFuture extends PhutilExecutableFuture {
   /**
    * Provides write sockets to the future core.
    *
-   * @return list List of write sockets.
+   * @return array List of write sockets.
    * @task internal
    */
   public function getWriteSockets() {
@@ -523,13 +522,13 @@ final class ExecFuture extends PhutilExecutableFuture {
    * Reads some bytes from a stream, discarding output once a certain amount
    * has been accumulated.
    *
-   * @param resource  Stream to read from.
-   * @param int       Maximum number of bytes to return from $stream. If
+   * @param resource  $stream Stream to read from.
+   * @param int       $limit Maximum number of bytes to return from $stream. If
    *                  additional bytes are available, they will be read and
    *                  discarded.
-   * @param string    Human-readable description of stream, for exception
-   *                  message.
-   * @param int       Maximum number of bytes to read.
+   * @param string    $description Human-readable description of stream, for
+   *                  exception message.
+   * @param int       $length Maximum number of bytes to read.
    * @return string   The data read from the stream.
    * @task internal
    */
@@ -598,7 +597,7 @@ final class ExecFuture extends PhutilExecutableFuture {
       $cwd = $this->getCWD();
 
       // NOTE: See note above about Phage.
-      if (class_exists('PhutilErrorTrap')) {
+      if (class_exists(PhutilErrorTrap::class)) {
         $trap = new PhutilErrorTrap();
       } else {
         $trap = null;
@@ -908,7 +907,7 @@ final class ExecFuture extends PhutilExecutableFuture {
   /**
    * Execute `proc_get_status()`, but avoid pitfalls.
    *
-   * @return dict Process status.
+   * @return array Process status.
    * @task internal
    */
   private function procGetStatus() {

@@ -56,8 +56,8 @@ abstract class LinesOfALarge extends Phobject implements Iterator {
    * without looking for delimiters. You can use this to stream a large file or
    * the output of a command which returns a large amount of data.
    *
-   * @param string|null A one-byte delimiter character.
-   * @return this
+   * @param string|null $character A one-byte delimiter character.
+   * @return $this
    * @task config
    */
   final public function setDelimiter($character) {

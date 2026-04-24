@@ -101,8 +101,8 @@ abstract class ArcanistBaseXHPASTLinter extends ArcanistFutureLinter {
   /**
    * Build futures on this linter, for use and to share with other linters.
    *
-   * @param list<string> Paths to build futures for.
-   * @return list<ExecFuture> Futures.
+   * @param array<string> $paths List of paths to build futures for.
+   * @return array<ExecFuture> List of futures.
    * @task sharing
    */
   final protected function buildSharedFutures(array $paths) {
@@ -122,7 +122,7 @@ abstract class ArcanistBaseXHPASTLinter extends ArcanistFutureLinter {
   /**
    * Release futures on this linter which are no longer in use elsewhere.
    *
-   * @param list<string> Paths to release futures for.
+   * @param array<string> $paths List of paths to release futures for.
    * @return void
    * @task sharing
    */
@@ -152,7 +152,7 @@ abstract class ArcanistBaseXHPASTLinter extends ArcanistFutureLinter {
   /**
    * Get a path's tree from the responsible linter.
    *
-   * @param   string           Path to retrieve tree for.
+   * @param   string           $path Path to retrieve tree for.
    * @return  XHPASTTree|null  Tree, or null if unparseable.
    * @task sharing
    */
@@ -188,7 +188,7 @@ abstract class ArcanistBaseXHPASTLinter extends ArcanistFutureLinter {
   /**
    * Get a path's parse exception from the responsible linter.
    *
-   * @param   string          Path to retrieve exception for.
+   * @param   string          $path Path to retrieve exception for.
    * @return  Exception|null  Parse exception, if available.
    * @task sharing
    */
@@ -209,8 +209,8 @@ abstract class ArcanistBaseXHPASTLinter extends ArcanistFutureLinter {
    * Returns all descendant nodes which represent a function call to one of the
    * specified functions.
    *
-   * @param  XHPASTNode    Root node.
-   * @param  list<string>  Function names.
+   * @param  XHPASTNode    $root Root node.
+   * @param  array<string>  $function_names List of function names.
    * @return AASTNodeList
    */
   protected function getFunctionCalls(XHPASTNode $root, array $function_names) {

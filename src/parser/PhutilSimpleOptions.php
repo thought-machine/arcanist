@@ -20,7 +20,7 @@ final class PhutilSimpleOptions extends Phobject {
 
 
   /**
-   * Convert a simple option list into a dict. For example:
+   * Convert a simple option list into a dictionary array. For example:
    *
    *    legs=4, eyes=2
    *
@@ -31,8 +31,8 @@ final class PhutilSimpleOptions extends Phobject {
    *      'eyes' => '2',
    *    );
    *
-   * @param   string  Input option list.
-   * @return  dict    Parsed dictionary.
+   * @param   string  $input Input option list.
+   * @return  array   Parsed dictionary.
    * @task parse
    */
   public function parse($input) {
@@ -119,7 +119,7 @@ final class PhutilSimpleOptions extends Phobject {
 
 
   /**
-   * Convert a dictionary into a simple option list. For example:
+   * Convert a dictionary array into a simple option list. For example:
    *
    *    array(
    *      'legs' => '4',
@@ -130,8 +130,8 @@ final class PhutilSimpleOptions extends Phobject {
    *
    *    legs=4, eyes=2
    *
-   * @param   dict    Input dictionary.
-   * @param   string  Additional characters to escape.
+   * @param   array   $options Input dictionary.
+   * @param   string  $escape (optional) Additional characters to escape.
    * @return  string  Unparsed option list.
    */
   public function unparse(array $options, $escape = '') {
@@ -161,9 +161,9 @@ final class PhutilSimpleOptions extends Phobject {
    * case insensitive, so "legs=4" has the same meaning as "LEGS=4". If you
    * set it to be case sensitive, the keys have different meanings.
    *
-   * @param bool  True to make the parser case sensitive, false (default) to
-   *              make it case-insensitive.
-   * @return this
+   * @param bool  $case_sensitive True to make the parser case sensitive, false
+   *              to make it case-insensitive.
+   * @return $this
    * @task config
    */
   public function setCaseSensitive($case_sensitive) {

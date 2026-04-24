@@ -144,7 +144,7 @@ abstract class ArcanistXHPASTLinterRule extends Phobject {
    *
    * TODO: Improve this and move it to XHPAST proper?
    *
-   * @param  string  The "semantic string" of a single value.
+   * @param  string  $string The "semantic string" of a single value.
    * @return mixed   `true` or `false` if the value could be evaluated
    *                 statically; `null` if static evaluation was not possible.
    */
@@ -168,7 +168,7 @@ abstract class ArcanistXHPASTLinterRule extends Phobject {
    * Returns all descendant nodes which represent an anonymous function
    * declaration.
    *
-   * @param  XHPASTNode    Root node.
+   * @param  XHPASTNode    $root Root node.
    * @return AASTNodeList
    */
   protected function getAnonymousClosures(XHPASTNode $root) {
@@ -187,7 +187,7 @@ abstract class ArcanistXHPASTLinterRule extends Phobject {
   /**
    * TODO
    *
-   * @param  XHPASTNode
+   * @param  XHPASTNode $variable
    * @return string
    */
   protected function getConcreteVariableString(XHPASTNode $variable) {
@@ -205,8 +205,8 @@ abstract class ArcanistXHPASTLinterRule extends Phobject {
    * Returns all descendant nodes which represent a function call to one of the
    * specified functions.
    *
-   * @param  XHPASTNode    Root node.
-   * @param  list<string>  Function names.
+   * @param  XHPASTNode    $root Root node.
+   * @param  array<string>  $function_names List of function names.
    * @return AASTNodeList
    */
   protected function getFunctionCalls(XHPASTNode $root, array $function_names) {
@@ -228,9 +228,9 @@ abstract class ArcanistXHPASTLinterRule extends Phobject {
   /**
    * Get class/method modifiers.
    *
-   * @param  XHPASTNode         A node of type `n_CLASS_DECLARATION` or
+   * @param  XHPASTNode         $node A node of type `n_CLASS_DECLARATION` or
    *                            `n_METHOD_DECLARATION`.
-   * @return map<string, bool>  Class/method modifiers.
+   * @return array<string, bool>  Class/method modifiers.
    */
   final protected function getModifiers(XHPASTNode $node) {
     $modifier_list = $node->getChildByIndex(0);
@@ -257,7 +257,7 @@ abstract class ArcanistXHPASTLinterRule extends Phobject {
   /**
    * Get PHP superglobals.
    *
-   * @return list<string>
+   * @return array<string> List of superglobals.
    */
   public function getSuperGlobalNames() {
     return array(

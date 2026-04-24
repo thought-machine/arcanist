@@ -275,8 +275,11 @@ abstract class ArcanistLandEngine
     return $this->getWorkflow()->getConfig($config_key);
   }
 
+  /**
+   * @param array<ArcanistLandCommitSet> $sets
+   */
   final protected function confirmRevisions(array $sets) {
-    assert_instances_of($sets, 'ArcanistLandCommitSet');
+    assert_instances_of($sets, ArcanistLandCommitSet::class);
 
     $revision_refs = mpull($sets, 'getRevisionRef');
     $viewer = $this->getViewer();
@@ -533,8 +536,11 @@ abstract class ArcanistLandEngine
       ));
   }
 
+  /**
+   * @param array<ArcanistRevisionRef> $revision_refs
+   */
   private function confirmBuilds(array $revision_refs) {
-    assert_instances_of($revision_refs, 'ArcanistRevisionRef');
+    assert_instances_of($revision_refs, ArcanistRevisionRef::class);
 
     $this->getWorkflow()->loadHardpoints(
       $revision_refs,
@@ -717,9 +723,13 @@ abstract class ArcanistLandEngine
       ->execute();
   }
 
+  /**
+   * @param array<ArcanistLandCommitSet> $sets
+   * @param array<ArcanistLandSymbol> $symbols
+   */
   final protected function confirmImplicitCommits(array $sets, array $symbols) {
-    assert_instances_of($sets, 'ArcanistLandCommitSet');
-    assert_instances_of($symbols, 'ArcanistLandSymbol');
+    assert_instances_of($sets, ArcanistLandCommitSet::class);
+    assert_instances_of($symbols, ArcanistLandSymbol::class);
 
     $implicit = array();
     foreach ($sets as $set) {
@@ -795,8 +805,11 @@ abstract class ArcanistLandEngine
     }
   }
 
+  /**
+   * @param array<ArcanistLandCommit> $commit_map
+   */
   final protected function loadRevisionRefs(array $commit_map) {
-    assert_instances_of($commit_map, 'ArcanistLandCommit');
+    assert_instances_of($commit_map, ArcanistLandCommit::class);
     $api = $this->getRepositoryAPI();
     $workflow = $this->getWorkflow();
 
@@ -1420,7 +1433,8 @@ abstract class ArcanistLandEngine
    * and min is the earliest ancestor. This is done so that non-landing commits
    * that are descendants of the latest revision will only be rebased once.
    *
-   * @param ArcanistLandCommitSet  The current commit set to cascade.
+   * @param ArcanistLandCommitSet $set The current commit set to cascade.
+   * @param string $into_commit The commit hash that was landed into.
    */
   abstract protected function cascadeState(
     ArcanistLandCommitSet $set,
@@ -1434,7 +1448,7 @@ abstract class ArcanistLandEngine
    * Prunes the given sets of commits. This should be called after the sets
    * have been merged.
    *
-   * @param array  The list of ArcanistLandCommitSet to prune, in order of
+   * @param array $sets The list of ArcanistLandCommitSet to prune, in order of
    *   min to max commit set, where min is the earliest ancestor and max
    *   is the latest descendant.
    */
@@ -1445,9 +1459,10 @@ abstract class ArcanistLandEngine
    * should only be called after all changes have been merged, pruned, and
    * pushed.
    *
-   * @param string  The commit hash that was landed into.
-   * @param ArcanistRepositoryLocalState  The local state that was captured
-   *   at the beginning of the land process. This may include stashed changes.
+   * @param string $into_commit The commit hash that was landed into.
+   * @param ArcanistRepositoryLocalState $state The local state that was
+   *   captured at the beginning of the land process. This may include stashed
+   *   changes.
    */
   abstract protected function reconcileLocalState(
     $into_commit,
@@ -1457,7 +1472,7 @@ abstract class ArcanistLandEngine
    * Display information to the user about how to proceed since the land
    * process was not fully completed. The merged branch has not been pushed.
    *
-   * @param string  The commit hash that was landed into.
+   * @param string $into_commit The commit hash that was landed into.
    */
   abstract protected function didHoldChanges($into_commit);
 
@@ -1524,8 +1539,11 @@ abstract class ArcanistLandEngine
     return $strategy;
   }
 
+  /**
+   * @param array<ArcanistLandCommitSet> $sets
+   */
   private function filterCommitSets(array $sets) {
-    assert_instances_of($sets, 'ArcanistLandCommitSet');
+    assert_instances_of($sets, ArcanistLandCommitSet::class);
     $log = $this->getLogEngine();
 
     // If some of the ancestor revisions are already closed, and the user did

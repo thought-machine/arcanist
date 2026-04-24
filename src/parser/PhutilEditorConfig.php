@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Parser for [[http://editorconfig.org/ | EditorConfig]] files.
+ * Parser for [[https://editorconfig.org/ | EditorConfig]] files.
  */
 final class PhutilEditorConfig extends Phobject {
 
@@ -17,7 +17,7 @@ final class PhutilEditorConfig extends Phobject {
   /**
    * Valid properties.
    *
-   * See http://editorconfig.org/#file-format-details.
+   * See https://editorconfig.org/#file-format-details.
    */
   private static $knownProperties = array(
     self::CHARSET => array(
@@ -41,7 +41,7 @@ final class PhutilEditorConfig extends Phobject {
   /**
    * Constructor.
    *
-   * @param string  The root directory.
+   * @param string $root The root directory.
    */
   public function __construct($root) {
     $this->root = $root;
@@ -50,9 +50,9 @@ final class PhutilEditorConfig extends Phobject {
   /**
    * Get the specified EditorConfig property for the specified path.
    *
-   * @param  string
-   * @param  string
-   * @return wild
+   * @param  string $path
+   * @param  string $key
+   * @return mixed
    */
   public function getProperty($path, $key) {
     if (!idx(self::$knownProperties, $key)) {
@@ -100,8 +100,8 @@ final class PhutilEditorConfig extends Phobject {
    *   the future).
    * - Invalid glob patterns will be silently ignored.
    *
-   * @param  string
-   * @return map<string, wild>
+   * @param  string $path
+   * @return array<string,mixed>
    */
   public function getProperties($path) {
     $configs = $this->getEditorConfigs($path);

@@ -31,8 +31,8 @@ final class FileFinder extends Phobject {
   /**
    * Create a new FileFinder.
    *
-   * @param string Root directory to find files beneath.
-   * @return this
+   * @param string $root Root directory to find files beneath.
+   * @return $this
    * @task create
    */
   public function __construct($root) {
@@ -106,7 +106,7 @@ final class FileFinder extends Phobject {
 
   /**
    * @task config
-   * @param string Either "php", "shell", or the empty string.
+   * @param string $mode Either "php", "shell", or the empty string.
    */
   public function setForceMode($mode) {
     $this->forceMode = $mode;
@@ -291,7 +291,7 @@ final class FileFinder extends Phobject {
       $command[] = '-print0';
 
       array_unshift($args, implode(' ', $command));
-      list($stdout) = newv('ExecFuture', $args)
+      list($stdout) = newv(ExecFuture::class, $args)
         ->setCWD($this->root)
         ->resolvex();
 

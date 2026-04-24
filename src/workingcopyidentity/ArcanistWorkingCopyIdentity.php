@@ -51,10 +51,11 @@ final class ArcanistWorkingCopyIdentity extends Phobject {
    * This method attempts to be robust against all sorts of possible
    * misconfiguration.
    *
-   * @param string    Path to load information for, usually the current working
-   *                  directory (unless running unit tests).
-   * @param map|null  Pass `null` to locate and load a `.arcconfig` file if one
-   *                  exists. Pass a map to use it to set configuration.
+   * @param string      $path Path to load information for, usually the current
+   *                    working directory (unless running unit tests).
+   * @param array|null  $config Pass `null` to locate and load a `.arcconfig`
+   *                    file if one exists. Pass a map to use it to set
+   *                    configuration.
    * @return ArcanistWorkingCopyIdentity Constructed working copy identity.
    */
   private static function newFromPathWithConfig($path, $config) {
@@ -205,8 +206,9 @@ final class ArcanistWorkingCopyIdentity extends Phobject {
     try {
       return phutil_json_decode($raw_config);
     } catch (PhutilJSONParserException $ex) {
-      throw new PhutilProxyException(
+      throw new Exception(
         pht("Unable to parse '%s' file '%s'.", '.arcconfig', $from_where),
+        0,
         $ex);
     }
   }
@@ -245,9 +247,9 @@ final class ArcanistWorkingCopyIdentity extends Phobject {
    * configuration sources. See @{method:getConfigFromAnySource} to read from
    * user configuration.
    *
-   * @param key   Key to read.
-   * @param wild  Default value if key is not found.
-   * @return wild Value, or default value if not found.
+   * @param string $key Key to read.
+   * @param mixed  $default (Optional) Default value if key is not found.
+   * @return mixed Value, or default value if not found.
    *
    * @task config
    */
@@ -289,7 +291,7 @@ final class ArcanistWorkingCopyIdentity extends Phobject {
   }
 
   public function readLocalArcConfig() {
-    if (strlen($this->localMetaDir)) {
+    if ($this->localMetaDir !== null && strlen($this->localMetaDir)) {
       $local_path = Filesystem::resolvePath('arc/config', $this->localMetaDir);
 
       $console = PhutilConsole::getConsole();
@@ -305,8 +307,9 @@ final class ArcanistWorkingCopyIdentity extends Phobject {
           $json = Filesystem::readFile($local_path);
           return phutil_json_decode($json);
         } catch (PhutilJSONParserException $ex) {
-          throw new PhutilProxyException(
+          throw new Exception(
             pht("Failed to parse '%s' as JSON.", $local_path),
+            0,
             $ex);
         }
       } else {

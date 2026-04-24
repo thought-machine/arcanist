@@ -63,7 +63,7 @@ abstract class ArcanistLinter extends Phobject {
    * Linters can use this method to provide arbitrary additional information to
    * be included in the output of `arc linters`.
    *
-   * @return map<string, string>  A mapping of header to body content for the
+   * @return array<string, string>  A mapping of header to body content for the
    *                              additional information sections.
    * @task info
    */
@@ -119,6 +119,7 @@ abstract class ArcanistLinter extends Phobject {
 
 
   /**
+   * @return ArcanistLintEngine
    * @task state
    */
   final protected function getEngine() {
@@ -131,8 +132,8 @@ abstract class ArcanistLinter extends Phobject {
    *
    * This ID is assigned automatically by the @{class:ArcanistLintEngine}.
    *
-   * @param string Unique linter ID.
-   * @return this
+   * @param string $id Unique linter ID.
+   * @return $this
    * @task state
    */
   final public function setLinterID($id) {
@@ -168,7 +169,7 @@ abstract class ArcanistLinter extends Phobject {
    * Linters which are not parallelizable should normally ignore this callback
    * and implement @{method:lintPath} instead.
    *
-   * @param list<string> A list of paths to be linted
+   * @param array<string> $paths A list of paths to be linted
    * @return void
    * @task exec
    */
@@ -185,7 +186,7 @@ abstract class ArcanistLinter extends Phobject {
    * Linters which are parallelizable may want to ignore this callback and
    * implement @{method:willLintPaths} and @{method:didLintPaths} instead.
    *
-   * @param string Path to lint.
+   * @param string $path Path to lint.
    * @return void
    * @task exec
    */
@@ -202,7 +203,7 @@ abstract class ArcanistLinter extends Phobject {
    * Linters which are not paralleizable should normally ignore this callback
    * and implement @{method:lintPath} instead.
    *
-   * @param list<string> A list of paths which were linted.
+   * @param array<string> $paths A list of paths which were linted.
    * @return void
    * @task exec
    */
@@ -288,8 +289,8 @@ abstract class ArcanistLinter extends Phobject {
    * Filter out paths which this linter doesn't act on (for example, because
    * they are binaries and the linter doesn't apply to binaries).
    *
-   * @param  list<string>
-   * @return list<string>
+   * @param  array<string> $paths List of paths
+   * @return array<string> List of paths
    */
   private function filterPaths(array $paths) {
     $engine = $this->getEngine();
@@ -617,7 +618,7 @@ abstract class ArcanistLinter extends Phobject {
    *
    * If the code is not recognized, you should throw an exception.
    *
-   * @param string  Code specified in configuration.
+   * @param string   $code Code specified in configuration.
    * @return string  Normalized code to use in severity map.
    */
   protected function getLintCodeFromLinterConfigurationKey($code) {

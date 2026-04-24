@@ -184,7 +184,7 @@ final class ArcanistLintMessage extends Phobject {
   }
 
   /**
-   * @param dict Keys 'path', 'line', 'char', 'original'.
+   * @param array $locations Keys 'path', 'line', 'char', 'original'.
    */
   public function setOtherLocations(array $locations) {
     assert_instances_of($locations, 'array');
@@ -250,6 +250,9 @@ final class ArcanistLintMessage extends Phobject {
     return $this->granularity;
   }
 
+  /**
+   * @param array<ArcanistLintMessage> $messages
+   */
   public function setDependentMessages(array $messages) {
     assert_instances_of($messages, __CLASS__);
     $this->dependentMessages = $messages;
@@ -272,8 +275,9 @@ final class ArcanistLintMessage extends Phobject {
    * less strict in linters themselves, since they often parse command line
    * output or XML and will end up with string representations of numbers.
    *
-   * @param mixed Integer or digit string.
-   * @return int Integer.
+   * @param mixed $value Integer or digit string.
+   * @param mixed $caller
+   * @return int|null Integer, or null if $value is null
    */
   private function validateInteger($value, $caller) {
     if ($value === null) {

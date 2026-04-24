@@ -40,8 +40,8 @@ final class ArcanistFileDataRef extends Phobject {
    * This name does not correspond to a path on disk, and is purely for
    * human consumption.
    *
-   * @param string Filename.
-   * @return this
+   * @param string $name Filename.
+   * @return $this
    * @task config
    */
   public function setName($name) {
@@ -65,7 +65,7 @@ final class ArcanistFileDataRef extends Phobject {
    * data, or by calling @{method:setPath} and providing a path to a file on
    * disk.
    *
-   * @param bytes Blob of file data.
+   * @param string $data Blob of file data.
    * @task config
    */
   public function setData($data) {
@@ -91,8 +91,8 @@ final class ArcanistFileDataRef extends Phobject {
    * The path itself only provides data. If you want to name the file, you
    * should also call @{method:setName}.
    *
-   * @param string Path on disk to a file containing data to upload.
-   * @return this
+   * @param string $path Path on disk to a file containing data to upload.
+   * @return $this
    * @task config
    */
   public function setPath($path) {
@@ -133,8 +133,8 @@ final class ArcanistFileDataRef extends Phobject {
    * you want to upload a temporary file instead, you can specify an epoch
    * timestamp. The file will be deleted after this time.
    *
-   * @param int Epoch timestamp to retain the file until.
-   * @return this
+   * @param int $epoch Epoch timestamp to retain the file until.
+   * @return $this
    * @task config
    */
   public function setDeleteAfterEpoch($epoch) {

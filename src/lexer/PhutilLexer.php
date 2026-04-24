@@ -87,7 +87,7 @@ abstract class PhutilLexer extends Phobject {
    * Return a set of rules for this lexer. See description in
    * @{class:PhutilLexer}.
    *
-   * @return dict Lexer rules.
+   * @return array Lexer rules.
    * @task lexerimpl
    */
   abstract protected function getRawRules();
@@ -233,9 +233,9 @@ abstract class PhutilLexer extends Phobject {
   /**
    * Lex an input string into tokens.
    *
-   * @param string Input string.
-   * @param string Initial lexer state.
-   * @return list List of lexer tokens.
+   * @param string $input Input string.
+   * @param string $initial_state (optional) Initial lexer state.
+   * @return array List of lexer tokens.
    * @task tokens
    */
   public function getTokens($input, $initial_state = 'start') {

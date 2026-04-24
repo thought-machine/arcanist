@@ -3,6 +3,7 @@
 final class PhutilPostmarkFuture extends FutureProxy {
 
   private $future;
+  private $clientID;
   private $accessToken;
   private $method;
   private $parameters;
@@ -80,8 +81,9 @@ final class PhutilPostmarkFuture extends FutureProxy {
     try {
       $data = phutil_json_decode($body);
     } catch (PhutilJSONParserException $ex) {
-      throw new PhutilProxyException(
+      throw new Exception(
         pht('Expected JSON response from Postmark.'),
+        0,
         $ex);
     }
 

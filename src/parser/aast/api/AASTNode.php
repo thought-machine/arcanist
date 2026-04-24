@@ -42,7 +42,7 @@ abstract class AASTNode extends Phobject {
     return $this->parentNode;
   }
 
-  final public function setParentNode(AASTNode $node = null) {
+  final public function setParentNode(?AASTNode $node = null) {
     $this->parentNode = $node;
     return $this;
   }
@@ -51,7 +51,7 @@ abstract class AASTNode extends Phobject {
     return $this->previousSibling;
   }
 
-  final public function setPreviousSibling(AASTNode $node = null) {
+  final public function setPreviousSibling(?AASTNode $node = null) {
     $this->previousSibling = $node;
     return $this;
   }
@@ -60,7 +60,7 @@ abstract class AASTNode extends Phobject {
     return $this->nextSibling;
   }
 
-  final public function setNextSibling(AASTNode $node = null) {
+  final public function setNextSibling(?AASTNode $node = null) {
     $this->nextSibling = $node;
     return $this;
   }
@@ -90,8 +90,8 @@ abstract class AASTNode extends Phobject {
   }
 
   final public function setChildren(array $children) {
-    // We don't call `assert_instances_of($children, 'AASTNode')` because doing
-    // so would incur a significant performance penalty.
+    // We don't call `assert_instances_of($children, AASTNode::class)` because
+    // doing so would incur a significant performance penalty.
     $this->children = $children;
     return $this;
   }
@@ -363,7 +363,7 @@ abstract class AASTNode extends Phobject {
    * Determines whether the current node appears //after// a specified node in
    * the tree.
    *
-   * @param  AASTNode
+   * @param  AASTNode $node
    * @return bool
    */
   final public function isAfter(AASTNode $node) {
@@ -375,7 +375,7 @@ abstract class AASTNode extends Phobject {
    * Determines whether the current node appears //before// a specified node in
    * the tree.
    *
-   * @param  AASTNode
+   * @param  AASTNode $node
    * @return bool
    */
   final public function isBefore(AASTNode $node) {
@@ -386,7 +386,7 @@ abstract class AASTNode extends Phobject {
   /**
    * Determines whether a specified node is a descendant of the current node.
    *
-   * @param  AASTNode
+   * @param  AASTNode $node
    * @return bool
    */
   final public function containsDescendant(AASTNode $node) {

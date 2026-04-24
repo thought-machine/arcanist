@@ -139,7 +139,7 @@ abstract class ArcanistRepositoryAPI extends Phobject {
    * A file may be in several states. Not all states are possible with all
    * version control systems.
    *
-   * @return map<string, bitmask> Map of paths, see above.
+   * @return array<string, string> Map of paths to bitmasks with status.
    * @task status
    */
   final public function getUncommittedStatus() {
@@ -227,7 +227,7 @@ abstract class ArcanistRepositoryAPI extends Phobject {
    *
    * See @{method:getUncommittedStatus} for a description of the return value.
    *
-   * @return map<string, bitmask> Map from paths to status.
+   * @return array<string, string> Map from paths to bitmasks with status.
    * @task status
    */
   final public function getCommitRangeStatus() {
@@ -247,7 +247,7 @@ abstract class ArcanistRepositoryAPI extends Phobject {
    *
    * See @{method:getUncommittedStatus} for a description of the return value.
    *
-   * @return map<string, bitmask> Map from paths to status.
+   * @return array<string, string> Map from paths to bitmasks with status.
    * @task status
    */
   final public function getWorkingCopyStatus() {
@@ -269,7 +269,7 @@ abstract class ArcanistRepositoryAPI extends Phobject {
    * Drops caches after changes to the working copy. By default, some queries
    * against the working copy are cached. They
    *
-   * @return this
+   * @return $this
    * @task status
    */
   final public function reloadWorkingCopy() {
@@ -298,7 +298,7 @@ abstract class ArcanistRepositoryAPI extends Phobject {
   /**
    * Fetches the original file data for each path provided.
    *
-   * @return map<string, string> Map from path to file data.
+   * @return array<string, string> Map from path to file data.
    */
   public function getBulkOriginalFileData($paths) {
     $filedata = array();
@@ -312,7 +312,7 @@ abstract class ArcanistRepositoryAPI extends Phobject {
   /**
    * Fetches the current file data for each path provided.
    *
-   * @return map<string, string> Map from path to file data.
+   * @return array<string, string> Map from path to file data.
    */
   public function getBulkCurrentFileData($paths) {
     $filedata = array();
@@ -429,7 +429,7 @@ abstract class ArcanistRepositoryAPI extends Phobject {
   /**
    * Try to read a scratch file, if it exists and is readable.
    *
-   * @param string Scratch file name.
+   * @param string $path Scratch file name.
    * @return mixed String for file contents, or false for failure.
    * @task scratch
    */
@@ -457,8 +457,8 @@ abstract class ArcanistRepositoryAPI extends Phobject {
    * Try to write a scratch file, if there's somewhere to put it and we can
    * write there.
    *
-   * @param  string Scratch file name to write.
-   * @param  string Data to write.
+   * @param  string $path Scratch file name to write.
+   * @param  string $data Data to write.
    * @return bool   True on success, false on failure.
    * @task scratch
    */
@@ -489,7 +489,7 @@ abstract class ArcanistRepositoryAPI extends Phobject {
   /**
    * Try to remove a scratch file.
    *
-   * @param   string  Scratch file name to remove.
+   * @param   string  $path Scratch file name to remove.
    * @return  bool    True if the file was removed successfully.
    * @task scratch
    */
@@ -512,7 +512,7 @@ abstract class ArcanistRepositoryAPI extends Phobject {
   /**
    * Get a human-readable description of the scratch file location.
    *
-   * @param string  Scratch file name.
+   * @param string  $path Scratch file name.
    * @return mixed  String, or false on failure.
    * @task scratch
    */
@@ -531,7 +531,7 @@ abstract class ArcanistRepositoryAPI extends Phobject {
   /**
    * Get the path to a scratch file, if possible.
    *
-   * @param string  Scratch file name.
+   * @param string  $path Scratch file name.
    * @return mixed  File path, or false on failure.
    * @task scratch
    */
@@ -566,6 +566,20 @@ abstract class ArcanistRepositoryAPI extends Phobject {
 
 
 /* -(  Base Commits  )------------------------------------------------------- */
+
+  /**
+   * In Subversion the concept of a "branch" is instead represented by
+   * subfolders within the SVN repository on your local filesystem,
+   * like "trunk/", "tags/", "branches/".
+   *
+   * @return bool True if the branch is supported by this API.
+   */
+  public function supportsBranches() {
+    // Assume a decent default.
+    // In the future we may want to make this method abstract. But not now,
+    // to avoid breaking changes in alien class extensions.
+    return true;
+  }
 
   abstract public function supportsCommitRanges();
 

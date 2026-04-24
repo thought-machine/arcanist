@@ -20,6 +20,12 @@
  */
 abstract class BaseHTTPFuture extends Future {
 
+  /**
+   * Default User-Agent for HTTP requests.
+   * @var ?string
+   */
+  private static $defaultUserAgent = null;
+
   private $method   = 'GET';
   private $timeout  = 300.0;
   private $headers  = array();
@@ -37,10 +43,10 @@ abstract class BaseHTTPFuture extends Future {
    * instantiate it; instead, build a new @{class:HTTPFuture} or
    * @{class:HTTPSFuture}.
    *
-   * @param string Fully-qualified URI to send a request to.
-   * @param mixed  String or array to include in the request. Strings will be
-   *               transmitted raw; arrays will be encoded and sent as
-   *               'application/x-www-form-urlencoded'.
+   * @param string $uri Fully-qualified URI to send a request to.
+   * @param mixed  $data (optional) String or array to include in the request.
+   *               Strings will be transmitted raw; arrays will be encoded and
+   *               sent as 'application/x-www-form-urlencoded'.
    * @task create
    */
   final public function __construct($uri, $data = array()) {
@@ -58,8 +64,8 @@ abstract class BaseHTTPFuture extends Future {
    * out. You can determine if a status is a timeout status by calling
    * isTimeout() on the status object.
    *
-   * @param float Maximum timeout, in seconds.
-   * @return this
+   * @param float $timeout Maximum timeout, in seconds.
+   * @return $this
    * @task config
    */
   public function setTimeout($timeout) {
@@ -83,8 +89,8 @@ abstract class BaseHTTPFuture extends Future {
    * Select the HTTP method (e.g., "GET", "POST", "PUT") to use for the request.
    * By default, requests use "GET".
    *
-   * @param string HTTP method name.
-   * @return this
+   * @param string $method HTTP method name.
+   * @return $this
    * @task config
    */
   final public function setMethod($method) {
@@ -124,8 +130,8 @@ abstract class BaseHTTPFuture extends Future {
    * Set the URI to send the request to. Note that this is also a constructor
    * parameter.
    *
-   * @param string URI to send the request to.
-   * @return this
+   * @param string $uri URI to send the request to.
+   * @return $this
    * @task config
    */
   public function setURI($uri) {
@@ -151,8 +157,8 @@ abstract class BaseHTTPFuture extends Future {
    * must be a string (in which case it will be sent raw) or an array (in which
    * case it will be encoded and sent as 'application/x-www-form-urlencoded').
    *
-   * @param mixed Data to send with the request.
-   * @return this
+   * @param mixed $data Data to send with the request.
+   * @return $this
    * @task config
    */
   public function setData($data) {
@@ -179,9 +185,9 @@ abstract class BaseHTTPFuture extends Future {
    * Add an HTTP header to the request. The same header name can be specified
    * more than once, which will cause multiple headers to be sent.
    *
-   * @param string Header name, like "Accept-Language".
-   * @param string Header value, like "en-us".
-   * @return this
+   * @param string $name Header name, like "Accept-Language".
+   * @param string $value Header value, like "en-us".
+   * @return $this
    * @task config
    */
   public function addHeader($name, $value) {
@@ -200,8 +206,8 @@ abstract class BaseHTTPFuture extends Future {
    *
    * In either case, an array with all (or all matching) headers is returned.
    *
-   * @param string|null Optional filter, which selects only headers with that
-   *                    name if provided.
+   * @param string|null $filter (optional) Filter, which selects only headers
+   *                    with that name if provided.
    * @return array      List of all (or all matching) headers.
    * @task config
    */
@@ -228,9 +234,9 @@ abstract class BaseHTTPFuture extends Future {
    * HTTP status code outside the 2xx range (notwithstanding other errors such
    * as connection or transport issues).
    *
-   * @param array|null List of expected HTTP status codes.
+   * @param array|null $status_codes List of expected HTTP status codes.
    *
-   * @return this
+   * @return $this
    * @task config
    */
   public function setExpectStatus($status_codes) {
@@ -251,9 +257,9 @@ abstract class BaseHTTPFuture extends Future {
   /**
    * Add a HTTP basic authentication header to the request.
    *
-   * @param string                Username to authenticate with.
-   * @param PhutilOpaqueEnvelope  Password to authenticate with.
-   * @return this
+   * @param string                $username Username to authenticate with.
+   * @param PhutilOpaqueEnvelope  $password Password to authenticate with.
+   * @return $this
    * @task config
    */
   public function setHTTPBasicAuthCredentials(
@@ -295,7 +301,7 @@ abstract class BaseHTTPFuture extends Future {
    * Exception-oriented @{method:resolve}. Throws if the status indicates an
    * error occurred.
    *
-   * @return tuple  HTTP request result <body, headers> tuple.
+   * @return array HTTP request result <body, headers> tuple.
    * @task resolve
    */
   final public function resolvex() {
@@ -316,8 +322,8 @@ abstract class BaseHTTPFuture extends Future {
   /**
    * Parse a raw HTTP response into a <status, body, headers> tuple.
    *
-   * @param string Raw HTTP response.
-   * @return tuple Valid resolution tuple.
+   * @param string $raw_response Raw HTTP response.
+   * @return array Valid resolution tuple.
    * @task internal
    */
   protected function parseRawHTTPResponse($raw_response) {
@@ -393,8 +399,8 @@ abstract class BaseHTTPFuture extends Future {
   /**
    * Parse an HTTP header block.
    *
-   * @param string Raw HTTP headers.
-   * @return list List of HTTP header tuples.
+   * @param string $head_raw Raw HTTP headers.
+   * @return array List of HTTP header tuples.
    * @task internal
    */
   protected function parseHeaders($head_raw) {
@@ -423,9 +429,9 @@ abstract class BaseHTTPFuture extends Future {
   /**
    * Find value of the first header with given name.
    *
-   * @param list List of headers from `resolve()`.
-   * @param string Case insensitive header name.
-   * @return string Value of the header or null if not found.
+   * @param array $headers List of headers from `resolve()`.
+   * @param string $search Case insensitive header name.
+   * @return string|null Value of the header or null if not found.
    * @task resolve
    */
   public static function getHeader(array $headers, $search) {
@@ -444,7 +450,7 @@ abstract class BaseHTTPFuture extends Future {
    * Build a result tuple indicating a parse error resulting from a malformed
    * HTTP response.
    *
-   * @return tuple Valid resolution tuple.
+   * @return array Valid resolution tuple.
    * @task internal
    */
   protected function buildMalformedResult($raw_response) {
@@ -455,6 +461,33 @@ abstract class BaseHTTPFuture extends Future {
       HTTPFutureParseResponseStatus::ERROR_MALFORMED_RESPONSE,
       $raw_response);
     return array($status, $body, $headers);
+  }
+
+
+/* -(  Configuring global options  )----------------------------------------- */
+
+
+  /**
+   * Get default user-agent in use.
+   *
+   * @return string Default User-Agent to use
+   * @task config
+   */
+  final public static function getDefaultUserAgent() {
+    if (self::$defaultUserAgent === null) {
+      self::$defaultUserAgent = PlatformSymbols::getPlatformClientName().'/1.0';
+    }
+    return self::$defaultUserAgent;
+  }
+
+  /**
+   * Set a default user-agent to use.
+   *
+   * @param string $ua Default User-Agent to use
+   * @task config
+   */
+  final public static function setDefaultUserAgent($ua) {
+    self::$defaultUserAgent = $ua;
   }
 
 }

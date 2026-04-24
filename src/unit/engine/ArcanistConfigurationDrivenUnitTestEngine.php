@@ -33,12 +33,13 @@ final class ArcanistConfigurationDrivenUnitTestEngine
     try {
       $config = phutil_json_decode($data);
     } catch (PhutilJSONParserException $ex) {
-      throw new PhutilProxyException(
+      throw new Exception(
         pht(
           "Expected '%s' file to be a valid JSON file, but ".
           "failed to decode '%s'.",
           '.arcunit',
           $config_path),
+        0,
         $ex);
     }
 
@@ -51,8 +52,9 @@ final class ArcanistConfigurationDrivenUnitTestEngine
           'engines' => 'map<string, map<string, wild>>',
         ));
     } catch (PhutilTypeCheckException $ex) {
-      throw new PhutilProxyException(
+      throw new Exception(
         pht("Error in parsing '%s' file.", $config_path),
+        0,
         $ex);
     }
 
@@ -89,11 +91,12 @@ final class ArcanistConfigurationDrivenUnitTestEngine
             'exclude' => 'optional regex | list<regex>',
           ));
       } catch (PhutilTypeCheckException $ex) {
-        throw new PhutilProxyException(
+        throw new Exception(
           pht(
             "Error in parsing '%s' file, for test engine '%s'.",
             '.arcunit',
             $name),
+          0,
           $ex);
       }
 
@@ -175,7 +178,7 @@ final class ArcanistConfigurationDrivenUnitTestEngine
 
   private function loadAvailableTestEngines() {
     return id(new PhutilClassMapQuery())
-      ->setAncestorClass('ArcanistUnitTestEngine')
+      ->setAncestorClass(parent::class)
       ->setUniqueMethod('getEngineConfigurationName', true)
       ->execute();
   }

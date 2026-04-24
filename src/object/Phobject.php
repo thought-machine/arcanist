@@ -1,16 +1,16 @@
 <?php
 
 /**
- * Base class for libphutil objects. Enforces stricter object semantics than
+ * Base class for Arcanist objects. Enforces stricter object semantics than
  * PHP.
  *
  * When a program attempts to write to an undeclared object property, PHP
- * creates the property. However, in libphutil this is always an error (for
+ * creates the property. However, in Arcanist this is always an error (for
  * example, a misspelled property name).  Instead of permitting the write,
  * subclasses will throw when an undeclared property is written.
  *
  * When a program attempts to iterate an object (for example, with `foreach`),
- * PHP iterates its public members. However, in libphutil this is always an
+ * PHP iterates its public members. However, in Arcanist this is always an
  * error (for example, iterating over the wrong variable). Instead of
  * permitting the iteration, subclasses will throw when an object is iterated.
  *
@@ -73,8 +73,9 @@ abstract class Phobject implements Iterator {
    * useful message if the constant is not defined and allows the constant to
    * be limited to a maximum length.
    *
-   * @param string Name of the constant.
-   * @param int|null Maximum number of bytes permitted in the value.
+   * @param string $key Name of the constant.
+   * @param int|null $byte_limit (optional) Maximum number of bytes permitted
+   *   in the value.
    * @return string Value of the constant.
    */
   public function getPhobjectClassConstant($key, $byte_limit = null) {

@@ -3,7 +3,7 @@
 /**
  * Load a map of concrete subclasses of some abstract parent class.
  *
- * libphutil is extensively modular through runtime introspection of class
+ * Arcanist is extensively modular through runtime introspection of class
  * maps. This method makes querying class maps easier.
  *
  * There are several common patterns used with modular class maps:
@@ -60,8 +60,8 @@ final class PhutilClassMapQuery extends Phobject {
    * Set the ancestor class or interface name to load the concrete descendants
    * of.
    *
-   * @param string Ancestor class or interface name.
-   * @return this
+   * @param string $class Ancestor class or interface name.
+   * @return $this
    * @task config
    */
   public function setAncestorClass($class) {
@@ -79,10 +79,10 @@ final class PhutilClassMapQuery extends Phobject {
    *
    * You must provide a method here to use @{method:setExpandMethod}.
    *
-   * @param string  Name of the unique key method.
-   * @param bool    If true, then classes which return `null` will be filtered
-   *                from the results.
-   * @return this
+   * @param string  $unique_method Name of the unique key method.
+   * @param bool    $filter_null (optional) If true, then classes which return
+   *                `null` will be filtered from the results.
+   * @return $this
    * @task config
    */
   public function setUniqueMethod($unique_method, $filter_null = false) {
@@ -125,8 +125,8 @@ final class PhutilClassMapQuery extends Phobject {
    * If a class map uses this pattern, it must also provide a unique key for
    * each instance with @{method:setUniqueMethod}.
    *
-   * @param string Name of the expansion method.
-   * @return this
+   * @param string $expand_method Name of the expansion method.
+   * @return $this
    * @task config
    */
   public function setExpandMethod($expand_method) {
@@ -141,8 +141,8 @@ final class PhutilClassMapQuery extends Phobject {
    * The map will be sorted using @{function:msort} and passing this method
    * name.
    *
-   * @param string Name of the sorting method.
-   * @return this
+   * @param string $sort_method Name of the sorting method.
+   * @return $this
    * @task config
    */
   public function setSortMethod($sort_method) {
@@ -154,8 +154,8 @@ final class PhutilClassMapQuery extends Phobject {
   /**
    * Provide a method to filter the map.
    *
-   * @param string Name of the filtering method.
-   * @return this
+   * @param string $filter_method Name of the filtering method.
+   * @return $this
    * @task config
    */
   public function setFilterMethod($filter_method) {
@@ -174,7 +174,7 @@ final class PhutilClassMapQuery extends Phobject {
   /**
    * Execute the query as configured.
    *
-   * @return map<string, object> Realized class map.
+   * @return array<string, object> Realized class map.
    * @task exec
    */
   public function execute() {
@@ -204,7 +204,7 @@ final class PhutilClassMapQuery extends Phobject {
    *
    * This method is used to fill the cache.
    *
-   * @return map<string, object> Realized class map.
+   * @return array<string, object> Realized class map.
    * @task exec
    */
   private function loadMap() {
@@ -301,7 +301,7 @@ final class PhutilClassMapQuery extends Phobject {
 
         // Since we may be early in the stack, use a string to avoid triggering
         // autoload in old versions of PHP.
-        $vector_class = 'PhutilSortVector';
+        $vector_class = PhutilSortVector::class;
         if ($item instanceof $vector_class) {
           $map = msortv($map, $sort);
         } else {

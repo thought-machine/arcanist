@@ -55,9 +55,9 @@ final class PhutilDeferredLog extends Phobject {
    *
    *   $log = new PhutilDeferredLog('/some/file.log', '[%T] %u');
    *
-   * @param string|null The file the entry should be written to, or null to
-   *                    create a log object which does not write anywhere.
-   * @param string      The log entry format.
+   * @param string|null $file The file the entry should be written to, or null
+   *                    to create a log object which does not write anywhere.
+   * @param string      $format The log entry format.
    * @task log
    */
   public function __construct($file, $format) {
@@ -85,8 +85,8 @@ final class PhutilDeferredLog extends Phobject {
    * When the log is written, the "%T" and "%u" variables will be replaced with
    * the values you provide.
    *
-   * @param dict  Map of variables to values.
-   * @return this
+   * @param array $map Map of variables to values.
+   * @return $this
    * @task log
    */
   public function setData(array $map) {
@@ -98,9 +98,10 @@ final class PhutilDeferredLog extends Phobject {
   /**
    * Get existing log data.
    *
-   * @param   string  Log data key.
-   * @param   wild    Default to return if data does not exist.
-   * @return  wild    Data, or default if data does not exist.
+   * @param   string  $key Log data key.
+   * @param   mixed   $default (optional) Default to return if data does not
+   *   exist.
+   * @return  mixed   Data, or default if data does not exist.
    * @task log
    */
   public function getData($key, $default = null) {
@@ -114,9 +115,9 @@ final class PhutilDeferredLog extends Phobject {
    *
    * NOTE: You can not change the file after the log writes.
    *
-   * @param string|null File where the entry should be written to, or null to
-   *                    prevent writes.
-   * @return this
+   * @param string|null $file File where the entry should be written to, or
+   *                    null to prevent writes.
+   * @return $this
    * @task log
    */
   public function setFile($file) {
@@ -165,7 +166,7 @@ final class PhutilDeferredLog extends Phobject {
    * A log object will never write more than once, so it is safe to call this
    * method even if the object's destructor later runs.
    *
-   * @return this
+   * @return $this
    * @task write
    */
   public function write() {

@@ -57,7 +57,7 @@ final class PhutilExecChannel extends PhutilChannel {
    * because @{class:ExecFuture} closes stdin by default when futures start.
    * If stdin has been closed, you will be unable to write on the channel.
    *
-   * @param ExecFuture Future to use as an underlying I/O source.
+   * @param ExecFuture $future Future to use as an underlying I/O source.
    * @task construct
    */
   public function __construct(ExecFuture $future) {
@@ -113,7 +113,9 @@ final class PhutilExecChannel extends PhutilChannel {
   }
 
   protected function writeBytes($bytes) {
-    throw new Exception(pht('%s can not write bytes directly!', 'ExecFuture'));
+    throw new Exception(
+      pht('%s can not write bytes directly!',
+      ExecFuture::class));
   }
 
   protected function getReadSockets() {
@@ -162,8 +164,8 @@ final class PhutilExecChannel extends PhutilChannel {
    * You can set a handler which does nothing to effectively ignore and discard
    * any output on stderr.
    *
-   * @param callable Handler to invoke when stderr data is received.
-   * @return this
+   * @param callable $handler Handler to invoke when stderr data is received.
+   * @return $this
    */
   public function setStderrHandler($handler) {
     $this->stderrHandler = $handler;

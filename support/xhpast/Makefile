@@ -1,5 +1,5 @@
 BISONFLAGS = --verbose --name-prefix xhpast
-CPPFLAGS   = -fPIC -Wall
+CPPFLAGS   += $(CXXFLAGS) -fPIC -Wall
 FLEXFLAGS  = -CFr
 XHPAST_VERSION := $(shell ./bin/xhpast-generate-version.php)
 
@@ -8,7 +8,7 @@ ifdef DEBUG
 	CPPFLAGS   += -ggdb -DDEBUG
 	FLEXFLAGS  += --debug
 else
-	CPPFLAGS  += -O3 -minline-all-stringops
+	CPPFLAGS   += -O3 $(shell ./bin/xhpast-generate-release-cppflags.php)
 endif
 
 ifdef PROFILE
