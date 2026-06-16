@@ -89,6 +89,7 @@ final class ArcanistConfigurationDrivenLintEngine extends ArcanistLintEngine {
             'type' => 'string',
             'include' => 'optional regex | list<regex>',
             'exclude' => 'optional regex | list<regex>',
+            'formatter' => 'optional bool',
           ) + $more);
       } catch (PhutilTypeCheckException $ex) {
         throw new Exception(
@@ -99,6 +100,9 @@ final class ArcanistConfigurationDrivenLintEngine extends ArcanistLintEngine {
           0,
           $ex);
       }
+
+      $formatter = idx($spec, 'formatter', false);
+      $linter->setFormatter($formatter);
 
       foreach ($more as $key => $value) {
         if (array_key_exists($key, $spec)) {

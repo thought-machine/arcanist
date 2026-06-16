@@ -18,6 +18,7 @@ abstract class ArcanistLinter extends Phobject {
   protected $paths = array();
   private $filteredPaths = null;
   protected $data = array();
+  private $formatter = false;
   protected $engine;
   protected $activePath;
   protected $messages = array();
@@ -153,6 +154,30 @@ abstract class ArcanistLinter extends Phobject {
    */
   final public function getLinterID() {
     return $this->id;
+  }
+
+
+  /**
+   * Set whether this linter is configured as a formatter.
+   *
+   * @param bool $formatter
+   * @return $this
+   * @task state
+   */
+  final public function setFormatter($formatter) {
+    $this->formatter = $formatter;
+    return $this;
+  }
+
+
+  /**
+   * Get whether this linter is configured as a formatter.
+   *
+   * @return bool
+   * @task state
+   */
+  final public function getFormatter() {
+    return $this->formatter;
   }
 
 
