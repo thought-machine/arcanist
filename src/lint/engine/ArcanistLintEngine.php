@@ -52,6 +52,7 @@ abstract class ArcanistLintEngine extends Phobject {
   private $repositoryVersion;
   private $results = array();
   private $stopped = array();
+  private $has_formatter_messages = false;
   private $minimumSeverity = ArcanistLintSeverity::SEVERITY_DISABLED;
 
   private $changedLines = array();
@@ -89,6 +90,10 @@ abstract class ArcanistLintEngine extends Phobject {
 
   public function getPaths() {
     return $this->paths;
+  }
+
+  final public function hasFormatterMessages() {
+    return $this->has_formatter_messages;
   }
 
   final public function setPathChangedLines($path, $changed) {
@@ -214,7 +219,6 @@ abstract class ArcanistLintEngine extends Phobject {
     }
 
     $exceptions = array();
-    $formatters_require_changes = false;
 
     if ($formatters) {
       $formatter_exceptions = $this->executeLinters($formatters);
@@ -222,11 +226,12 @@ abstract class ArcanistLintEngine extends Phobject {
         $exceptions = array_merge($exceptions, $formatter_exceptions);
       }
 
-      $formatters_require_changes = $this->runLinters($formatters);
+      $this->has_formatter_messages = $this->runLinters($formatters);
     }
 
+
     // If there are no formattnig changes required, run the remaining linters
-    if (!$formatters_require_changes && $non_formatters) {
+    if (!$this->has_formatter_messages  && $non_formatters) {
       $non_formatter_exceptions = $this->executeLinters($non_formatters);
       if (is_array($non_formatter_exceptions)) {
         $exceptions = array_merge($exceptions, $non_formatter_exceptions);
