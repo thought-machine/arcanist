@@ -9,7 +9,6 @@ final class ArcanistLintWorkflow extends ArcanistWorkflow {
   const RESULT_WARNINGS   = 1;
   const RESULT_ERRORS     = 2;
   const RESULT_SKIP       = 3;
-  const RESULT_FORMATTER  = 4;
 
   const DEFAULT_SEVERITY = ArcanistLintSeverity::SEVERITY_ADVICE;
 
@@ -378,8 +377,6 @@ EOTEXT
       $result_code = self::RESULT_ERRORS;
     } else if ($has_warnings) {
       $result_code = self::RESULT_WARNINGS;
-    } else if ($engine->hasFormatterMessages()) {
-      $result_code = self::RESULT_FORMATTER;  
     } else {
       $result_code = self::RESULT_OKAY;
     }
