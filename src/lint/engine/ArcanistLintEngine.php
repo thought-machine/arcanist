@@ -225,7 +225,6 @@ abstract class ArcanistLintEngine extends Phobject {
     }
 
 
-    // If there are no formattnig changes required, run the remaining linters
     if ($non_formatters) {
       $non_formatter_exceptions = $this->executeLinters($non_formatters);
       if (is_array($non_formatter_exceptions)) {
