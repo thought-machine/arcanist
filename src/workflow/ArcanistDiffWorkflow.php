@@ -3036,33 +3036,28 @@ EOTEXT
 
       $parsed_message = ArcanistDifferentialCommitMessage::newFromRawCorpus($base_msg);
       $parent_revision_id = $parsed_message->getRevisionID();
-      if (!$parent_revision_id || $parent_revision_id == $revision_id) {
-        return;
-      }
+
+      $target_parents = array();
 
       $conduit = $this->getConduit();
-      $parent_revisions_info = $conduit->callMethodSynchronous(
-        'differential.revision.search',
-        array(
-          'constraints' => array(
-            'ids' => array((int)$parent_revision_id),
-          ),
-        ));
+      if ($parent_revision_id && $parent_revision_id != $revision_id) {
+        $parent_revisions_info = $conduit->callMethodSynchronous(
+          'differential.revision.search',
+          array(
+            'constraints' => array(
+              'ids' => array((int)$parent_revision_id),
+            ),
+          ));
 
-      $parent_data = idx($parent_revisions_info, 'data', array());
-      $parent_item = head($parent_data);
-      if (!$parent_item) {
-        return;
-      }
-
-      $parent_ref = ArcanistRevisionRef::newFromConduit($parent_item);
-      if ($parent_ref->isClosed()) {
-        return;
-      }
-
-      $parent_phid = $parent_ref->getPHID();
-      if (!$parent_phid) {
-        return;
+        $parent_data = idx($parent_revisions_info, 'data', array());
+        $parent_item = head($parent_data);
+        if ($parent_item) {
+          $parent_ref = ArcanistRevisionRef::newFromConduit($parent_item);
+          $parent_phid = $parent_ref->getPHID();
+          if ($parent_phid && !$parent_ref->isClosed()) {
+            $target_parents = array($parent_phid);
+          }
+        }
       }
 
       $conduit->callMethodSynchronous(
@@ -3072,7 +3067,7 @@ EOTEXT
           'transactions' => array(
             array(
               'type' => 'parents.set',
-              'value' => array($parent_phid),
+              'value' => $target_parents,
             ),
           ),
         ));
