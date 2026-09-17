@@ -594,10 +594,10 @@ EOTEXT
       }
       if (mt_rand(1, 100) <= 20) {
         echo phutil_console_format(
-          "<fg:yellow>**%s**</fg> %s\n",
+          "<bg:magenta>** %s **</bg> %s\n",
           pht('TOP TIP!'),
           pht(
-            'Let Dingley review your PR before raising it. Start gemini '.
+            'Let Dingley review your PR. Start gemini here, '.
             'and type \'Use your Dingley skill to review my changes\'.'));
       }
     }
