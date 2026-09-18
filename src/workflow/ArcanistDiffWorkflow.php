@@ -592,14 +592,6 @@ EOTEXT
       if ($this->shouldOpenCreatedObjectsInBrowser()) {
         $this->openURIsInBrowser(array($uri));
       }
-      if (mt_rand(1, 100) <= 20) {
-        echo phutil_console_format(
-          "<bg:magenta>** %s **</bg> %s\n",
-          pht('TOP TIP!'),
-          pht(
-            'Let Dingley review your PR. Start gemini here, '.
-            'and type \'Use your Dingley skill to review my changes\'.'));
-      }
     }
 
     echo pht('Included changes:')."\n";
