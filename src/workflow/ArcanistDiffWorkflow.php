@@ -735,7 +735,7 @@ EOTEXT
       pht(
         "The changes which arc is about to push may not be what you intended:\n\n%s\n\n".
         "Note that under normal usage, you should not pass a parameter to `arc diff` ".
-        "specifying what to diff against; arc works this out on its own.\n\n"
+        "specifying what to diff against; arc works this out on its own.\n\n".
         "To disable a check, use `--ignore-sanity-checks=<check>` (checks: ".
         "%s) or `--ignore-sanity-checks=all`.",
         implode("\n\n", $problems),
