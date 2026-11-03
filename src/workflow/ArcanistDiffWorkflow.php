@@ -711,7 +711,7 @@ EOTEXT
         if (!in_array('reviewed', $ignored)) {
           $reviewed = array();
           foreach ($commits as $commit) {
-            if (preg_match('/^Reviewed-By:/mi', $commit['message'])) {
+            if (preg_match('/^Reviewed By:/mi', $commit['message'])) {
               $reviewed[] = substr($commit['commit'], 0, 12).' '.
                 $commit['summary'];
             }
