@@ -96,6 +96,19 @@ final class ArcanistGitAPI extends ArcanistRepositoryAPI {
     return ($common_ancestor == $parent) && ($common_ancestor != $child);
   }
 
+  /**
+   * Check whether `$ancestor` is reachable from `$descendant` (or is the same
+   * commit).
+   */
+  public function isAncestorOf($ancestor, $descendant) {
+    list($err) = $this->execManualLocal(
+      'merge-base --is-ancestor %s %s',
+      $ancestor,
+      $descendant);
+
+    return !$err;
+  }
+
   public function getLocalCommitInformation() {
     if ($this->repositoryHasNoCommits) {
       // Zero commits.

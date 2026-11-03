@@ -335,6 +335,14 @@ EOTEXT
           'After creating a diff or revision, open it in a web browser.'),
       ),
       '*' => 'paths',
+      'ignore-sanity-checks' => array(
+        'param' => 'checks',
+        'help' => pht(
+          'Disable sanity checks which warn about pushing unintended '.
+          'changes. Takes a comma-separated list of: %s. Use "all" to '.
+          'disable every check.',
+          implode(', ', array_keys(self::getSanityCheckNames()))),
+      ),
       'head' => array(
         'param' => 'commit',
         'help' => pht(
@@ -387,6 +395,8 @@ EOTEXT
       throw new ArcanistUsageException(
         pht('There are no changes to generate a diff from!'));
     }
+
+    $this->runSanityChecks($changes);
 
     $diff_spec = array(
       'changes' => mpull($changes, 'toDictionary'),
@@ -606,6 +616,134 @@ EOTEXT
     $this->removeScratchFile('create-message');
 
     return 0;
+  }
+
+  const SANITY_CHECK_FILE_LIMIT = 50;
+
+  private static function getSanityCheckNames() {
+    return array(
+      'base' => pht('base commit is not an ancestor of the head commit'),
+      'authors' => pht('commits have multiple authors'),
+      'reviewed' => pht('commits include a "Reviewed-By" field'),
+      'files' => pht(
+        'more than %d files are affected',
+        self::SANITY_CHECK_FILE_LIMIT),
+    );
+  }
+
+  private function getIgnoredSanityChecks() {
+    $known = self::getSanityCheckNames();
+    $value = $this->getArgument('ignore-sanity-checks');
+    $ignored = array();
+    foreach (explode(',', (string)$value) as $name) {
+      $name = trim($name);
+      if (!strlen($name)) {
+        continue;
+      }
+      if ($name === 'all') {
+        return array_keys($known);
+      }
+      if (!isset($known[$name])) {
+        throw new ArcanistUsageException(
+          pht(
+            'Unknown sanity check "%s" passed to "%s". Valid checks are: %s, '.
+            'all.',
+            $name,
+            '--ignore-sanity-checks',
+            implode(', ', array_keys($known))));
+      }
+      $ignored[] = $name;
+    }
+    return $ignored;
+  }
+
+  /**
+   * Warn and prompt if the changes being pushed look unintentional.
+   */
+  private function runSanityChecks(array $changes) {
+    $ignored = $this->getIgnoredSanityChecks();
+    $names = self::getSanityCheckNames();
+    $problems = array();
+
+    if (!in_array('files', $ignored)) {
+      if (count($changes) > self::SANITY_CHECK_FILE_LIMIT) {
+        $problems['files'] = pht(
+          'These changes affect %s files (more than %s files in one revision is considered suspect).',
+          new PhutilNumber(count($changes)),
+          self::SANITY_CHECK_FILE_LIMIT);
+      }
+    }
+
+    $repository_api = $this->getRepositoryAPI();
+    if (!$this->isRawDiffSource() &&
+        $repository_api instanceof ArcanistGitAPI) {
+
+      if (!in_array('base', $ignored)) {
+        $base = $repository_api->getBaseCommit();
+        $head = $repository_api->getHeadCommit();
+        if ($base !== ArcanistGitAPI::GIT_MAGIC_ROOT_COMMIT &&
+            !$repository_api->isAncestorOf($base, $head)) {
+          $problems['base'] = pht(
+            'The base commit (%s) is not an ancestor of the head commit (%s).',
+            substr($base, 0, 12),
+            substr($head, 0, 12));
+        }
+      }
+
+      $need_commits = !in_array('authors', $ignored) ||
+                      !in_array('reviewed', $ignored);
+      if ($need_commits) {
+        $commits = $repository_api->getLocalCommitInformation();
+
+        if (!in_array('authors', $ignored)) {
+          $authors = array();
+          foreach ($commits as $commit) {
+            $authors[phutil_utf8_strtolower($commit['authorEmail'])] =
+              $commit['author'].' <'.$commit['authorEmail'].'>';
+          }
+          if (count($authors) > 1) {
+            $problems['authors'] = pht(
+              "The commits being pushed have multiple authors:\n%s",
+              '  '.implode("\n  ", $authors));
+          }
+        }
+
+        if (!in_array('reviewed', $ignored)) {
+          $reviewed = array();
+          foreach ($commits as $commit) {
+            if (preg_match('/^Reviewed-By:/mi', $commit['message'])) {
+              $reviewed[] = substr($commit['commit'], 0, 12).' '.
+                $commit['summary'];
+            }
+          }
+          if ($reviewed) {
+            $problems['reviewed'] = pht(
+              "These commits have a \"Reviewed-By\" field, which suggests ".
+              "they have already landed:\n%s",
+              '  '.implode("\n  ", $reviewed));
+          }
+        }
+      }
+    }
+
+    if (!$problems) {
+      return;
+    }
+
+    $this->writeWarn(
+      pht('SANITY CHECKS'),
+      pht(
+        "The changes which arc is about to push may not be what you intended:\n\n%s\n\n".
+        "Note that under normal usage, you should not pass a parameter to `arc diff` ".
+        "specifying what to diff against; arc works this out on its own.\n\n"
+        "To disable a check, use `--ignore-sanity-checks=<check>` (checks: ".
+        "%s) or `--ignore-sanity-checks=all`.",
+        implode("\n\n", $problems),
+        implode(', ', array_keys($problems))));
+
+    if (!phutil_console_confirm(pht('Push these changes anyway?'), true)) {
+      throw new ArcanistUserAbortException();
+    }
   }
 
   private function runRepositoryAPISetup() {
