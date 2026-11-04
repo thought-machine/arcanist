@@ -190,7 +190,7 @@ final class PhutilConsole extends Phobject {
   }
 
   private function writeMessage(PhutilConsoleMessage $message) {
-    if ($this->disabledTypes[$message->getType()]) {
+    if ($this->disabledTypes[(string)$message->getType()]) {
       return $this;
     }
 
