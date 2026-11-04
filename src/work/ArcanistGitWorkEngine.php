@@ -80,6 +80,9 @@ final class ArcanistGitWorkEngine
       return null;
     }
 
+    // Assert that the remote is non-empty (which would mostly indicate that
+    // our logic for checking the suffix is inadequate to assert that it is the
+    // remote tracking branch we want).
     if (strlen($upstream) <= strlen($prefix) + strlen($suffix) ||
         substr($upstream, -strlen($suffix)) !== $suffix) {
       $log->writeTrace(
