@@ -201,6 +201,12 @@ EOTEXT
       'allow-untracked' => array(
         'help' => pht('Skip checks for untracked files in the working copy.'),
       ),
+      'no-upstream-check' => array(
+        'help' => pht(
+          'Skip the check for a branch which already contains the upstream '.
+          'of its base commit, which can cause extra commits to be included '.
+          'in the diff.'),
+      ),
       'excuse' => array(
         'param' => 'excuse',
         'help' => pht(
@@ -360,6 +366,7 @@ EOTEXT
 
     $this->runRepositoryAPISetup();
     $this->runDiffSetupBasics();
+    $this->checkStaleUpstream();
 
     $commit_message = $this->buildCommitMessage();
 
@@ -627,6 +634,70 @@ EOTEXT
       $repository_api->setHeadCommit($head_commit);
     }
 
+  }
+
+  /**
+   * Warn if the diff would include commits from the upstream of the base
+   * branch because the base branch has not been brought up to date.
+   */
+  private function checkStaleUpstream() {
+    if ($this->getArgument('no-upstream-check')) {
+      return;
+    }
+
+    if ($this->isRawDiffSource() || !$this->requiresWorkingCopy()) {
+      return;
+    }
+
+    if ($this->getArgument('json')) {
+      // Output is buffered in this mode, so we can't prompt.
+      return;
+    }
+
+    $repository_api = $this->getRepositoryAPI();
+    if (!($repository_api instanceof ArcanistGitAPI)) {
+      return;
+    }
+
+    $limit = 20;
+    $stale = $repository_api->getStaleUpstreamCommits($limit);
+    if (!$stale) {
+      return;
+    }
+
+    $base = $stale['base'];
+    $newer = $stale['upstream_of_upstream'];
+    $total = $stale['total'];
+
+    $lines = array();
+    foreach ($stale['commits'] as $commit) {
+      $lines[] = '    '.$commit;
+    }
+    if ($total > count($stale['commits'])) {
+      $lines[] = '    '.pht(
+        '...and %s more.',
+        new PhutilNumber($total - count($stale['commits'])));
+    }
+
+    echo phutil_console_format(
+      "**<bg:yellow> %s </bg>** %s\n\n%s\n\n%s\n\n",
+      pht('WARNING'),
+      pht(
+        "HEAD already contains '%s', but '%s' (which this diff is based ".
+        "on) is behind it. This diff would include %s commit(s):",
+        $newer,
+        $base,
+        new PhutilNumber($total)),
+      implode("\n", $lines),
+      pht(
+        "Updating the upstream of your branch will probably fix this; run ".
+        "git branch --set-upstream-to=%s (or git branch -u %s)\n".
+        "(Use --no-upstream-check to skip this check.)",
+        $newer, $newer));
+
+    if (!phutil_console_confirm(pht('Continue anyway?'), $default_no = true)) {
+      throw new ArcanistUserAbortException();
+    }
   }
 
   private function runDiffSetupBasics() {
