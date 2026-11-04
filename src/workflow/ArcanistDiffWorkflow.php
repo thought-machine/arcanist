@@ -664,18 +664,18 @@ EOTEXT
       return;
     }
 
-    $base = $stale['base'];
-    $newer = $stale['upstream_of_upstream'];
-    $total = $stale['total'];
+    $base = $stale['base_ref'];
+    $newer = $stale['upstream_ref'];
+    $total = $stale['total_commit_count'];
 
     $lines = array();
-    foreach ($stale['commits'] as $commit) {
+    foreach ($stale['commits_sample'] as $commit) {
       $lines[] = '    '.$commit;
     }
-    if ($total > count($stale['commits'])) {
+    if ($total > count($stale['commits_sample'])) {
       $lines[] = '    '.pht(
         '...and %s more.',
-        new PhutilNumber($total - count($stale['commits'])));
+        new PhutilNumber($total - count($stale['commits_sample'])));
     }
 
     echo phutil_console_format(

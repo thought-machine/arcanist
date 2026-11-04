@@ -35,12 +35,12 @@ final class ArcanistGitAPIStaleUpstreamTestCase extends PhutilTestCase {
 
     $result = $api->getStaleUpstreamCommits(20);
 
-    $this->assertEqual('parent', $result['base']);
-    $this->assertEqual('root', $result['upstream_of_upstream']);
-    $this->assertEqual(3, $result['total']);
-    $this->assertEqual(3, count($result['commits']));
+    $this->assertEqual('parent', $result['base_ref']);
+    $this->assertEqual('root', $result['upstream_ref']);
+    $this->assertEqual(3, $result['total_commit_count']);
+    $this->assertEqual(3, count($result['commits_sample']));
     $this->assertTrue(
-      (bool)preg_grep('(root-1)', $result['commits']),
+      (bool)preg_grep('(root-1)', $result['commits_sample']),
       pht('Excess upstream commit should be listed.'));
   }
 
@@ -53,7 +53,7 @@ final class ArcanistGitAPIStaleUpstreamTestCase extends PhutilTestCase {
 
     $result = $api->getStaleUpstreamCommits(20);
 
-    $this->assertEqual(2, $result['total']);
+    $this->assertEqual(2, $result['total_commit_count']);
   }
 
   public function testTriggeredWhenUpstreamOfUpstreamMovedOnAfterMerge() {
@@ -66,12 +66,12 @@ final class ArcanistGitAPIStaleUpstreamTestCase extends PhutilTestCase {
 
     $result = $api->getStaleUpstreamCommits(20);
 
-    $this->assertEqual(3, $result['total']);
+    $this->assertEqual(3, $result['total_commit_count']);
     $this->assertTrue(
-      (bool)preg_grep('(root-1)', $result['commits']),
+      (bool)preg_grep('(root-1)', $result['commits_sample']),
       pht('Excess upstream commit should be listed.'));
     $this->assertFalse(
-      (bool)preg_grep('(root-2)', $result['commits']),
+      (bool)preg_grep('(root-2)', $result['commits_sample']),
       pht('Commit which is not in HEAD should not be listed.'));
   }
 
@@ -85,7 +85,7 @@ final class ArcanistGitAPIStaleUpstreamTestCase extends PhutilTestCase {
 
     $result = $api->getStaleUpstreamCommits(20);
 
-    $this->assertEqual(2, $result['total']);
+    $this->assertEqual(2, $result['total_commit_count']);
   }
 
   public function testNotTriggeredWhenUpstreamOfUpstreamMovedOnSeparately() {
@@ -110,8 +110,8 @@ final class ArcanistGitAPIStaleUpstreamTestCase extends PhutilTestCase {
 
     $result = $api->getStaleUpstreamCommits(2);
 
-    $this->assertEqual(2, count($result['commits']));
-    $this->assertTrue($result['total'] > 2);
+    $this->assertEqual(2, count($result['commits_sample']));
+    $this->assertTrue($result['total_commit_count'] > 2);
   }
 
   public function testNotTriggeredOnceUpstreamIsUpdated() {
@@ -149,9 +149,9 @@ final class ArcanistGitAPIStaleUpstreamTestCase extends PhutilTestCase {
 
     $result = $api->getStaleUpstreamCommits(20);
 
-    $this->assertEqual('parent', $result['base']);
-    $this->assertEqual('root', $result['upstream_of_upstream']);
-    $this->assertEqual(3, $result['total']);
+    $this->assertEqual('parent', $result['base_ref']);
+    $this->assertEqual('root', $result['upstream_ref']);
+    $this->assertEqual(3, $result['total_commit_count']);
   }
 
   public function testNotTriggeredWhenBaseIsNotABranch() {
@@ -215,11 +215,11 @@ final class ArcanistGitAPIStaleUpstreamTestCase extends PhutilTestCase {
     $api->reloadCommitRange();
     $result = $api->getStaleUpstreamCommits(20);
 
-    $this->assertEqual('feature', $result['base']);
-    $this->assertEqual('root', $result['upstream_of_upstream']);
-    $this->assertEqual(3, $result['total']);
+    $this->assertEqual('feature', $result['base_ref']);
+    $this->assertEqual('root', $result['upstream_ref']);
+    $this->assertEqual(3, $result['total_commit_count']);
     $this->assertTrue(
-      (bool)preg_grep('(feature \(squashed\))', $result['commits']),
+      (bool)preg_grep('(feature \(squashed\))', $result['commits_sample']),
       pht('Squashed commit should be listed.'));
 
     // Point "stacked" at "root".

@@ -1467,18 +1467,24 @@ final class ArcanistGitAPI extends ArcanistRepositoryAPI {
    * "master" is older than it should be and the diff includes all of the
    * commits which "origin/master" has gained.
    *
-   * @param int $limit Maximum number of commits to return.
-   * @return map|null Null if there is no problem, or a map with keys "base"
-   *   (the ref the diff is against), "upstream_of_upstream" (the first
-   *   upstream of that ref, or of its upstreams, which HEAD has already
-   *   picked up commits from), "total" (the number of commits in the diff)
-   *   and "commits" (up to $limit descriptions of the commits in the diff).
+   * @param int $commits_sample_limit Maximum number of commits to return.
+   * @return map|null Null if there is no problem, or a map  that can be used
+   *   to build a warning message containing:
+   *     - base_ref (str): the git reference being diffed against
+   *     - upstream_ref (str): some direct or indirect upstream of base_ref
+   *       which HEAD has already picked up commits from
+   *     - total_commit_count (int): the total number of commits which would be
+   *       included in the pushed diff
+   *     - commits_sample (array of str): up to $commits_sample_limit hashes
+   *       and titles of the commits that would be included in the pushed diff,
+   *       starting with the most recent.
    */
-  public function getStaleUpstreamCommits($limit) {
+  public function getStaleUpstreamCommits($commits_sample_limit) {
     $console = PhutilConsole::getConsole();
 
     $merge_base = $this->getBaseCommit();
 
+    // This gets set as a side effect of calling $this->getBaseCommit()
     $base = $this->baseCommitRef;
     if ($base === null) {
       // The base was not computed relative to a named ref.
@@ -1600,7 +1606,7 @@ final class ArcanistGitAPI extends ArcanistRepositoryAPI {
     list($log) = $this->execxLocal(
       'log --format=%s --max-count=%d %s',
       '%h %s',
-      $limit,
+      $commits_sample_limit,
       $range);
 
     $console->writeLog(
@@ -1613,10 +1619,10 @@ final class ArcanistGitAPI extends ArcanistRepositoryAPI {
         trim($total)));
 
     return array(
-      'base' => $base,
-      'upstream_of_upstream' => $stale_upstream,
-      'total' => (int)trim($total),
-      'commits' => phutil_split_lines(rtrim($log), false),
+      'base_ref' => $base,
+      'upstream_ref' => $stale_upstream,
+      'total_commit_count' => (int)trim($total),
+      'commits_sample' => phutil_split_lines(rtrim($log), false),
     );
   }
 
