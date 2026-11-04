@@ -659,8 +659,7 @@ EOTEXT
       return;
     }
 
-    $limit = 20;
-    $stale = $repository_api->getStaleUpstreamCommits($limit);
+    $stale = $repository_api->getStaleUpstreamCommits(20);
     if (!$stale) {
       return;
     }
@@ -680,7 +679,7 @@ EOTEXT
     }
 
     echo phutil_console_format(
-      "**<bg:yellow> %s </bg>** %s\n\n%s\n\n%s\n\n",
+      "**<bg:yellow> %s </bg>** %s\n\n%s\n\n%s",
       pht('WARNING'),
       pht(
         "HEAD already contains '%s', but '%s' (which this diff is based ".
