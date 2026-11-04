@@ -5,6 +5,7 @@ abstract class ArcanistWorkEngine
 
   private $symbolArgument;
   private $startArgument;
+  private $disableAutoTrackRemote = false;
 
   final public function setSymbolArgument($symbol_argument) {
     $this->symbolArgument = $symbol_argument;
@@ -22,6 +23,15 @@ abstract class ArcanistWorkEngine
 
   final public function getStartArgument() {
     return $this->startArgument;
+  }
+
+  final public function setDisableAutoTrackRemote($disable) {
+    $this->disableAutoTrackRemote = $disable;
+    return $this;
+  }
+
+  final public function getDisableAutoTrackRemote() {
+    return $this->disableAutoTrackRemote;
   }
 
   final public function execute() {
