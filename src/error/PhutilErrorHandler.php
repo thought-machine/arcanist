@@ -34,6 +34,7 @@ final class PhutilErrorHandler extends Phobject {
   private static $errorListeners = array();
   private static $initialized = false;
   private static $traps = array();
+  private static $collapsedLogs = false;
 
   const EXCEPTION   = 'exception';
   const ERROR       = 'error';
@@ -80,6 +81,10 @@ final class PhutilErrorHandler extends Phobject {
     self::addErrorListener($listener);
   }
 
+
+  public static function enableCollapsedLogs() {
+    self::$collapsedLogs = true;
+  }
 
 /* -(  Exception Utilities  )------------------------------------------------ */
 
@@ -320,7 +325,7 @@ final class PhutilErrorHandler extends Phobject {
    * @return string Human-readable trace.
    * @task internal
    */
-  public static function formatStacktrace($trace) {
+  public static function formatStacktrace($trace, $seperator = "\n") {
     $result = array();
 
     $libinfo = self::getLibraryVersions();
@@ -370,7 +375,7 @@ final class PhutilErrorHandler extends Phobject {
 
       $result[] = $line;
     }
-    return implode("\n", $result);
+    return implode($seperator, $result);
   }
 
 
@@ -400,8 +405,14 @@ final class PhutilErrorHandler extends Phobject {
           $metadata['line']);
 
         $metadata['default_message'] = $default_message;
-        error_log($default_message);
-        self::outputStacktrace($metadata['trace']);
+
+        if (self::$collapsedLogs) {
+          error_log($default_message . '\\n' . self::formatStacktrace($metadata['trace'], '\\n'));
+        } else {
+          error_log($default_message);
+          self::outputStacktrace($metadata['trace']);
+        }
+
         break;
       case self::EXCEPTION:
         $messages = array();
@@ -423,8 +434,14 @@ final class PhutilErrorHandler extends Phobject {
           self::getRootException($value)->getLine());
 
         $metadata['default_message'] = $default_message;
-        error_log($default_message);
-        self::outputStacktrace($metadata['trace']);
+
+        if (self::$collapsedLogs) {
+          error_log($default_message . '\\n' . self::formatStacktrace($metadata['trace'], '\\n'));
+        } else {
+          error_log($default_message);
+          self::outputStacktrace($metadata['trace']);
+        }
+
         break;
       case self::PHLOG:
         $default_message = sprintf(
