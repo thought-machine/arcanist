@@ -1458,6 +1458,19 @@ final class ArcanistGitAPI extends ArcanistRepositoryAPI {
   }
 
   /**
+   * Get the base commit, along with the named ref (like a branch) it was
+   * computed relative to.
+   *
+   * @return pair<string, string|null> The base commit, and the named ref or
+   *   null if the base commit was not computed relative to a named ref.
+   */
+  private function getBaseCommitAndSymbolicRef() {
+    // `baseCommitRef` is populated as a side effect of calling `getBaseCommit`
+    $commit = $this->getBaseCommit();
+    return array($commit, $this->baseCommitRef);
+  }
+
+  /**
    * Detect a branch which already contains the upstream of its base ref, while
    * the base ref itself is behind that upstream.
    *
@@ -1482,18 +1495,16 @@ final class ArcanistGitAPI extends ArcanistRepositoryAPI {
   public function getStaleUpstreamCommits($commits_sample_limit) {
     $console = PhutilConsole::getConsole();
 
-    $merge_base = $this->getBaseCommit();
-
-    // This gets set as a side effect of calling $this->getBaseCommit()
-    $base = $this->baseCommitRef;
-    if ($base === null) {
+    list($base_commit, $base_symbolic_ref) =
+      $this->getBaseCommitAndSymbolicRef();
+    if ($base_symbolic_ref === null) {
       // The base was not computed relative to a named ref.
       $console->writeLog(
         "%s\n",
         pht(
           'Skipping stale upstream check: base commit "%s" was not computed '.
           'relative to a named ref.',
-          $merge_base));
+          $base_commit));
       return null;
     }
 
@@ -1501,10 +1512,10 @@ final class ArcanistGitAPI extends ArcanistRepositoryAPI {
       "%s\n",
       pht(
         'Checking for stale upstream: base ref is "%s", merge-base is "%s".',
-        $base,
-        $merge_base));
+        $base_symbolic_ref,
+        $base_commit));
 
-    $path = $this->getPathToUpstream($base);
+    $path = $this->getPathToUpstream($base_symbolic_ref);
     $upstreams = array();
     foreach ($path->getLocalBranches() as $branch) {
       $spec = $path->getUpstream($branch);
@@ -1520,7 +1531,9 @@ final class ArcanistGitAPI extends ArcanistRepositoryAPI {
       // The base has no upstream.
       $console->writeLog(
         "%s\n",
-        pht('Skipping stale upstream check: "%s" has no upstream.', $base));
+        pht(
+          'Skipping stale upstream check: "%s" has no upstream.',
+          $base_symbolic_ref));
       return null;
     }
 
@@ -1528,7 +1541,7 @@ final class ArcanistGitAPI extends ArcanistRepositoryAPI {
       "%s\n",
       pht(
         'Upstreams of "%s": %s.',
-        $base,
+        $base_symbolic_ref,
         implode(', ', $upstreams)));
 
     $head = $this->getHeadCommit();
@@ -1568,7 +1581,7 @@ final class ArcanistGitAPI extends ArcanistRepositoryAPI {
         list($base_has_commit) = $this->execManualLocal(
           'merge-base --is-ancestor %s %s',
           $common_commit,
-          $base);
+          $base_symbolic_ref);
 
         // "merge-base --is-ancestor" exits with 0 if the first commit is an
         // ancestor of the second one.
@@ -1579,7 +1592,7 @@ final class ArcanistGitAPI extends ArcanistRepositoryAPI {
               'Commit %s is in HEAD and "%s" but not in "%s".',
               $common_commit,
               $upstream,
-              $base));
+              $base_symbolic_ref));
           $stale_upstream = $upstream;
           break 2;
         }
@@ -1589,18 +1602,20 @@ final class ArcanistGitAPI extends ArcanistRepositoryAPI {
           pht(
             'Commit %s is already in "%s".',
             $common_commit,
-            $base));
+            $base_symbolic_ref));
       }
     }
 
     if ($stale_upstream === null) {
       $console->writeLog(
         "%s\n",
-        pht('No upstream of "%s" has commits missing from it.', $base));
+        pht(
+          'No upstream of "%s" has commits missing from it.',
+          $base_symbolic_ref));
       return null;
     }
 
-    $range = $merge_base.'..'.$head;
+    $range = $base_commit.'..'.$head;
 
     list($total) = $this->execxLocal('rev-list --count %s', $range);
     list($log) = $this->execxLocal(
@@ -1614,12 +1629,12 @@ final class ArcanistGitAPI extends ArcanistRepositoryAPI {
       pht(
         'Stale upstream detected: "%s" is behind "%s", and the diff '.
         'includes %s commit(s).',
-        $base,
+        $base_symbolic_ref,
         $stale_upstream,
         trim($total)));
 
     return array(
-      'base_ref' => $base,
+      'base_ref' => $base_symbolic_ref,
       'upstream_ref' => $stale_upstream,
       'total_commit_count' => (int)trim($total),
       'commits_sample' => phutil_split_lines(rtrim($log), false),
