@@ -39,6 +39,12 @@ function id($x) {
  *                  $default is returned without raising a warning.
  */
 function idx(array $array, $key, $default = null) {
+  // PHP 8.5 deprecates null array keys; "" is what PHP used to implicitly
+  // convert them to.
+  if ($key === null) {
+    $key = '';
+  }
+
   // isset() is a micro-optimization - it is fast but fails for null values.
   if (isset($array[$key])) {
     return $array[$key];
@@ -148,6 +154,11 @@ function mpull(array $list, $method, $key_method = null) {
   foreach ($list as $key => $object) {
     if ($key_method !== null) {
       $key = $object->$key_method();
+      // PHP 8.5 deprecates null array keys; "" is what PHP used to implicitly
+      // convert them to.
+      if ($key === null) {
+        $key = '';
+      }
     }
     if ($method !== null) {
       $value = $object->$method();
@@ -223,6 +234,11 @@ function ppull(array $list, $property, $key_property = null) {
   foreach ($list as $key => $object) {
     if ($key_property !== null) {
       $key = $object->$key_property;
+      // PHP 8.5 deprecates null array keys; "" is what PHP used to implicitly
+      // convert them to.
+      if ($key === null) {
+        $key = '';
+      }
     }
     if ($property !== null) {
       $value = $object->$property;
@@ -272,6 +288,11 @@ function ipull(array $list, $index, $key_index = null) {
   foreach ($list as $key => $array) {
     if ($key_index !== null) {
       $key = $array[$key_index];
+      // PHP 8.5 deprecates null array keys; "" is what PHP used to implicitly
+      // convert them to.
+      if ($key === null) {
+        $key = '';
+      }
     }
     if ($index !== null) {
       $value = $array[$index];
