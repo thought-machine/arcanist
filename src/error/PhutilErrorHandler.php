@@ -319,6 +319,25 @@ final class PhutilErrorHandler extends Phobject {
 
 
   /**
+   * Log a message followed by its stacktrace, on a single line if collapsed
+   * logs are enabled.
+   *
+   * @param string $message Message to log.
+   * @param array $trace A stacktrace, e.g. from debug_backtrace();
+   * @return void
+   * @task internal
+   */
+  private static function logWithStacktrace($message, $trace) {
+    if (self::$collapsedLogs) {
+      error_log($message . '\\n' . self::formatStacktrace($trace, '\\n'));
+    } else {
+      error_log($message);
+      self::outputStacktrace($trace);
+    }
+  }
+
+
+  /**
    * Format a stacktrace for output.
    *
    * @param array $trace A stacktrace, e.g. from debug_backtrace();
@@ -406,13 +425,7 @@ final class PhutilErrorHandler extends Phobject {
 
         $metadata['default_message'] = $default_message;
 
-        if (self::$collapsedLogs) {
-          error_log($default_message . '\\n' . self::formatStacktrace($metadata['trace'], '\\n'));
-        } else {
-          error_log($default_message);
-          self::outputStacktrace($metadata['trace']);
-        }
-
+        self::logWithStacktrace($default_message, $metadata['trace']);
         break;
       case self::EXCEPTION:
         $messages = array();
@@ -435,13 +448,7 @@ final class PhutilErrorHandler extends Phobject {
 
         $metadata['default_message'] = $default_message;
 
-        if (self::$collapsedLogs) {
-          error_log($default_message . '\\n' . self::formatStacktrace($metadata['trace'], '\\n'));
-        } else {
-          error_log($default_message);
-          self::outputStacktrace($metadata['trace']);
-        }
-
+        self::logWithStacktrace($default_message, $metadata['trace']);
         break;
       case self::PHLOG:
         $default_message = sprintf(
