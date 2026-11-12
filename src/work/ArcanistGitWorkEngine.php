@@ -3,8 +3,6 @@
 final class ArcanistGitWorkEngine
   extends ArcanistWorkEngine {
 
-  // NOTE: This is public (rather than protected, like the method it
-  // implements) so that it can be tested directly.
   public function getDefaultStartSymbol() {
     $api = $this->getRepositoryAPI();
 
@@ -69,7 +67,7 @@ final class ArcanistGitWorkEngine
     $suffix = '/'.$name;
 
     $upstream = trim($upstream);
-    if (strncmp($upstream, $prefix, strlen($prefix)) !== 0) {
+    if (!str_starts_with($upstream, $prefix)) {
       $log->writeTrace(
         pht('LOCAL UPSTREAM'),
         pht(
@@ -84,7 +82,7 @@ final class ArcanistGitWorkEngine
     // our logic for checking the suffix is inadequate to assert that it is the
     // remote tracking branch we want).
     if (strlen($upstream) <= strlen($prefix) + strlen($suffix) ||
-        substr($upstream, -strlen($suffix)) !== $suffix) {
+        !str_ends_with($upstream, $suffix)) {
       $log->writeTrace(
         pht('DIFFERENT UPSTREAM'),
         pht(
