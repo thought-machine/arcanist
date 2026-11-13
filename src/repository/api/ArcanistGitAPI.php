@@ -16,6 +16,7 @@ final class ArcanistGitAPI extends ArcanistRepositoryAPI {
 
   private $symbolicHeadCommit;
   private $resolvedHeadCommit;
+  private $baseCommitRef;
 
   protected function buildLocalFuture(array $argv) {
     $argv[0] = 'git '.$argv[0];
@@ -224,6 +225,8 @@ final class ArcanistGitAPI extends ArcanistRepositoryAPI {
             $symbolic_commit));
       }
 
+      $this->baseCommitRef = $symbolic_commit;
+
       if ($this->symbolicHeadCommit === null) {
         $this->setBaseCommitExplanation(
           pht(
@@ -383,6 +386,8 @@ final class ArcanistGitAPI extends ArcanistRepositoryAPI {
     list($merge_base) = $this->execxLocal(
       'merge-base -- %s HEAD',
       $default_relative);
+
+    $this->baseCommitRef = $default_relative;
 
     return trim($merge_base);
   }
@@ -1406,6 +1411,7 @@ final class ArcanistGitAPI extends ArcanistRepositoryAPI {
                 'merge-base -- %s HEAD',
                 $upstream);
               $upstream_merge_base = rtrim($upstream_merge_base);
+              $this->baseCommitRef = $upstream;
               $this->setBaseCommitExplanation(
                 pht(
                   "it is the merge-base of the upstream of the current branch ".
@@ -1448,6 +1454,191 @@ final class ArcanistGitAPI extends ArcanistRepositoryAPI {
   protected function didReloadCommitRange() {
     // After an amend, the symbolic head may resolve to a different commit.
     $this->resolvedHeadCommit = null;
+    $this->baseCommitRef = null;
+  }
+
+  /**
+   * Get the base commit, along with the named ref (like a branch) it was
+   * computed relative to.
+   *
+   * @return pair<string, string|null> The base commit, and the named ref or
+   *   null if the base commit was not computed relative to a named ref.
+   */
+  private function getBaseCommitAndSymbolicRef() {
+    // `baseCommitRef` is populated as a side effect of calling `getBaseCommit`
+    $commit = $this->getBaseCommit();
+    return array($commit, $this->baseCommitRef);
+  }
+
+  /**
+   * Detect a branch which already contains the upstream of its base ref, while
+   * the base ref itself is behind that upstream.
+   *
+   * For example, if a feature branch is based on local "master", which tracks
+   * "origin/master", and the user merges or rebases onto "origin/master"
+   * without updating the upstream of the feature branch, the merge-base with
+   * "master" is older than it should be and the diff includes all of the
+   * commits which "origin/master" has gained.
+   *
+   * @param int $commits_sample_limit Maximum number of commits to return.
+   * @return map|null Null if there is no problem, or a map  that can be used
+   *   to build a warning message containing:
+   *     - base_ref (str): the git reference being diffed against
+   *     - upstream_ref (str): some direct or indirect upstream of base_ref
+   *       which HEAD has already picked up commits from
+   *     - total_commit_count (int): the total number of commits which would be
+   *       included in the pushed diff
+   *     - commits_sample (array of str): up to $commits_sample_limit hashes
+   *       and titles of the commits that would be included in the pushed diff,
+   *       starting with the most recent.
+   */
+  public function getStaleUpstreamCommits($commits_sample_limit) {
+    $console = PhutilConsole::getConsole();
+
+    list($base_commit, $base_symbolic_ref) =
+      $this->getBaseCommitAndSymbolicRef();
+    if ($base_symbolic_ref === null) {
+      // The base was not computed relative to a named ref.
+      $console->writeLog(
+        "%s\n",
+        pht(
+          'Skipping stale upstream check: base commit "%s" was not computed '.
+          'relative to a named ref.',
+          $base_commit));
+      return null;
+    }
+
+    $console->writeLog(
+      "%s\n",
+      pht(
+        'Checking for stale upstream: base ref is "%s", merge-base is "%s".',
+        $base_symbolic_ref,
+        $base_commit));
+
+    $path = $this->getPathToUpstream($base_symbolic_ref);
+    $upstreams = array();
+    foreach ($path->getLocalBranches() as $branch) {
+      $spec = $path->getUpstream($branch);
+      if ($spec['type'] == ArcanistGitUpstreamPath::TYPE_REMOTE) {
+        $upstreams[] = $spec['remote'].'/'.$spec['name'];
+      } else {
+        $upstreams[] = $spec['name'];
+      }
+    }
+    $upstreams = array_unique($upstreams);
+
+    if (!$upstreams) {
+      // The base has no upstream.
+      $console->writeLog(
+        "%s\n",
+        pht(
+          'Skipping stale upstream check: "%s" has no upstream.',
+          $base_symbolic_ref));
+      return null;
+    }
+
+    $console->writeLog(
+      "%s\n",
+      pht(
+        'Upstreams of "%s": %s.',
+        $base_symbolic_ref,
+        implode(', ', $upstreams)));
+
+    $head = $this->getHeadCommit();
+
+    // The commits which are reachable from both HEAD and one of the upstreams
+    // of the base (or of those upstreams, and so on) are the ones HEAD has
+    // picked up from there, by merging or by being rebased onto them. If any
+    // of those are not reachable from the base, they are in the diff, even if
+    // the upstream has moved on since.
+    $stale_upstream = null;
+    foreach ($upstreams as $upstream) {
+      list($err, $common) = $this->execManualLocal(
+        'merge-base --all %s %s',
+        $upstream,
+        $head);
+      if ($err) {
+        // HEAD and this upstream have no common history.
+        $console->writeLog(
+          "%s\n",
+          pht(
+            'HEAD (%s) has no common history with "%s".',
+            $head,
+            $upstream));
+        continue;
+      }
+
+      $common_commits = phutil_split_lines(rtrim($common), false);
+      $console->writeLog(
+        "%s\n",
+        pht(
+          'HEAD (%s) and "%s" have common commit(s): %s.',
+          $head,
+          $upstream,
+          implode(', ', $common_commits)));
+
+      foreach ($common_commits as $common_commit) {
+        list($base_has_commit) = $this->execManualLocal(
+          'merge-base --is-ancestor %s %s',
+          $common_commit,
+          $base_symbolic_ref);
+
+        // "merge-base --is-ancestor" exits with 0 if the first commit is an
+        // ancestor of the second one.
+        if ($base_has_commit !== 0) {
+          $console->writeLog(
+            "%s\n",
+            pht(
+              'Commit %s is in HEAD and "%s" but not in "%s".',
+              $common_commit,
+              $upstream,
+              $base_symbolic_ref));
+          $stale_upstream = $upstream;
+          break 2;
+        }
+
+        $console->writeLog(
+          "%s\n",
+          pht(
+            'Commit %s is already in "%s".',
+            $common_commit,
+            $base_symbolic_ref));
+      }
+    }
+
+    if ($stale_upstream === null) {
+      $console->writeLog(
+        "%s\n",
+        pht(
+          'No upstream of "%s" has commits missing from it.',
+          $base_symbolic_ref));
+      return null;
+    }
+
+    $range = $base_commit.'..'.$head;
+
+    list($total) = $this->execxLocal('rev-list --count %s', $range);
+    list($log) = $this->execxLocal(
+      'log --format=%s --max-count=%d %s',
+      '%h %s',
+      $commits_sample_limit,
+      $range);
+
+    $console->writeLog(
+      "%s\n",
+      pht(
+        'Stale upstream detected: "%s" is behind "%s", and the diff '.
+        'includes %s commit(s).',
+        $base_symbolic_ref,
+        $stale_upstream,
+        trim($total)));
+
+    return array(
+      'base_ref' => $base_symbolic_ref,
+      'upstream_ref' => $stale_upstream,
+      'total_commit_count' => (int)trim($total),
+      'commits_sample' => phutil_split_lines(rtrim($log), false),
+    );
   }
 
   /**
