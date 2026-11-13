@@ -5,6 +5,7 @@ abstract class ArcanistWorkEngine
 
   private $symbolArgument;
   private $startArgument;
+  private $disableAutoTrackRemote = false;
 
   final public function setSymbolArgument($symbol_argument) {
     $this->symbolArgument = $symbol_argument;
@@ -22,6 +23,15 @@ abstract class ArcanistWorkEngine
 
   final public function getStartArgument() {
     return $this->startArgument;
+  }
+
+  final public function setDisableAutoTrackRemote($disable) {
+    $this->disableAutoTrackRemote = $disable;
+    return $this;
+  }
+
+  final public function getDisableAutoTrackRemote() {
+    return $this->disableAutoTrackRemote;
   }
 
   final public function execute() {
@@ -94,7 +104,9 @@ abstract class ArcanistWorkEngine
 
   abstract protected function newMarker($symbol, $start);
   abstract protected function moveToMarker(ArcanistMarkerRef $marker);
-  abstract protected function getDefaultStartSymbol();
+
+  // NOTE: This is public to allow testing.
+  abstract public function getDefaultStartSymbol();
 
   private function workOnRevision($symbol) {
     $workflow = $this->getWorkflow();

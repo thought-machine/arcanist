@@ -15,6 +15,12 @@ final class ArcanistWorkWorkflow
           pht(
             'When creating a new branch or bookmark, use this as the '.
             'branch point.')),
+      $this->newWorkflowArgument('no-auto-track-remote')
+        ->setHelp(
+          pht(
+            'In Git, forces the current branch to be used as the start point '.
+            'instead of checking if the new branch can be started from an '.
+            'upstream remote tracking branch. Has no effect if --start is set')),
       $this->newWorkflowArgument('symbol')
         ->setWildcard(true),
     );
@@ -40,13 +46,16 @@ a new branch or bookmark.
 
 When "arc work" creates a branch or bookmark, it will use **--start** as the
 branchpoint if it is provided. Otherwise, the current working copy state will
-serve as the starting point.
+serve as the starting point. In Git, if the current branch tracks a remote
+branch with the same name and has not diverged from it, that remote branch will
+be used as the starting point instead. Use **--no-auto-track-remote** to
+disable this.
 EOHELP
       );
 
     return $this->newWorkflowInformation()
       ->setSynopsis(pht('Begin or resume work.'))
-      ->addExample(pht('**work** [--start __start__] __symbol__'))
+      ->addExample(pht('**work** [--start __start__] [--no-auto-track-remote] __symbol__'))
       ->setHelp($help);
   }
 
@@ -87,6 +96,7 @@ EOHELP
       ->setLogEngine($this->getLogEngine())
       ->setSymbolArgument($symbol_argument)
       ->setStartArgument($start_argument)
+      ->setDisableAutoTrackRemote($this->getArgument('no-auto-track-remote'))
       ->execute();
 
     return 0;

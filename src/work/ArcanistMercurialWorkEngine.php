@@ -3,7 +3,7 @@
 final class ArcanistMercurialWorkEngine
   extends ArcanistWorkEngine {
 
-  protected function getDefaultStartSymbol() {
+  public function getDefaultStartSymbol() {
     $api = $this->getRepositoryAPI();
     return $api->getWorkingCopyRevision();
   }
