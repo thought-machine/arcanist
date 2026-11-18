@@ -16,6 +16,7 @@ final class ArcanistLintWorkflow extends ArcanistWorkflow {
   private $shouldAmendChanges = false;
   private $shouldAmendWithoutPrompt = false;
   private $shouldAmendAutofixesWithoutPrompt = false;
+  private $didAmendChanges = false;
   private $engine;
 
   public function getWorkflowName() {
@@ -345,6 +346,7 @@ EOTEXT
         }
 
         $repository_api->amendCommit();
+        $this->didAmendChanges = true;
       } else {
         throw new ArcanistUsageException(
           pht(
@@ -384,6 +386,10 @@ EOTEXT
     $renderer->renderResultCode($result_code);
 
     return $result_code;
+  }
+
+  public function didAmendChanges() {
+    return $this->didAmendChanges;
   }
 
   public function getUnresolvedMessages() {

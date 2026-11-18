@@ -1271,6 +1271,19 @@ EOTEXT
 
       $lint_result = $lint_workflow->run();
 
+      // Patches from one linter (e.g. a formatter) can resolve messages raised by another linter,
+      // which the run above still counts as unresolved. Re-lint the amended commit to get an
+      // accurate result. Otherwise the user has no lint errors but arc still asks for a reason which
+      // is confusing.
+      if ($lint_workflow->didAmendChanges() &&
+          ($lint_result == ArcanistLintWorkflow::RESULT_ERRORS ||
+           $lint_result == ArcanistLintWorkflow::RESULT_WARNINGS)) {
+        $this->console->writeOut("%s\n", pht('Re-linting after applying patches...'));
+        $lint_workflow = $this->buildChildWorkflow('lint', $argv);
+        $lint_workflow->setShouldAmendChanges(true);
+        $lint_result = $lint_workflow->run();
+      }
+
       switch ($lint_result) {
         case ArcanistLintWorkflow::RESULT_OKAY:
           if ($this->getArgument('advice') &&
