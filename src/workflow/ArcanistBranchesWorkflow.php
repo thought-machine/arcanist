@@ -8,7 +8,14 @@ final class ArcanistBranchesWorkflow
   }
 
   public function getWorkflowArguments() {
-    return array();
+    return array(
+      $this->newWorkflowArgument('json')
+        ->setHelp(pht('Output branches in JSON format instead of a table.')),
+    );
+  }
+
+  protected function isJSONOutput() {
+    return (bool)$this->getArgument('json');
   }
 
   public function getWorkflowInformation() {
@@ -21,7 +28,7 @@ EOHELP
     return $this->newWorkflowInformation()
       ->setSynopsis(
         pht('Show an enhanced view of branches in the working copy.'))
-      ->addExample(pht('**branches**'))
+      ->addExample(pht('**branches** [__options__]'))
       ->setHelp($help);
   }
 
