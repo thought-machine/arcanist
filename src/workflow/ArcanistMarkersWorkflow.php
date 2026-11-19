@@ -5,6 +5,10 @@ abstract class ArcanistMarkersWorkflow
 
   abstract protected function getWorkflowMarkerType();
 
+  protected function isJSONOutput() {
+    return false;
+  }
+
   protected function runWorkflow() {
     $api = $this->getRepositoryAPI();
 
@@ -77,6 +81,15 @@ abstract class ArcanistMarkersWorkflow
     $this->loadHardpoints(
       $state_refs,
       ArcanistWorkingCopyStateRef::HARDPOINT_REVISIONREFS);
+
+    if ($this->isJSONOutput()) {
+      echo id(new PhutilJSON())->encodeAsList(
+        id(new ArcanistMarkersJSONBuilder())
+          ->setMarkers($markers)
+          ->setStateRefs($state_refs)
+          ->buildList());
+      return 0;
+    }
 
     $partitions = $graph->newPartitionQuery()
       ->withHeads($heads)
