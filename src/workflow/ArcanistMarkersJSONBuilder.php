@@ -39,6 +39,8 @@ final class ArcanistMarkersJSONBuilder
 
       $results[] = array(
         'name' => $marker->getName(),
+        // In git, "active" means the branch is currently checked out (the one
+        // "HEAD" points at). With a detached HEAD, no branch is active.
         'active' => (bool)$marker->getIsActive(),
         'commit' => $marker->getCommitHash(),
         'summary' => $marker->getSummary(),
